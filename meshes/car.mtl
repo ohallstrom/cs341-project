@@ -1,0 +1,8 @@
+# Blender MTL File: 'shadow_scene_1.blend'
+# Material Count: 1
+
+newmtl redMtl
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ns 18.00
+

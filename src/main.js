@@ -61,15 +61,21 @@ async function main() {
 		'shader_viscube_frag': load_text('./src/shaders/cubemap_visualization_cube.frag.glsl'),
 
 		//'mesh_scene': load_mesh_obj(regl, './meshes/shadow_scene_1.obj'),
-		'mesh_terrain': mesh_load_obj(regl, './meshes/shadow_scene__terrain.obj', {
-			mat_architecture: [0.79, 0.41, 0.31],
-			mat_terrain:      [0.90, 0.70, 0.40],
-			mat_screen:       [0.31, 0.84, 0.42],
-		}),
+		// 'mesh_terrain': mesh_load_obj(regl, './meshes/shadow_scene__terrain.obj', {
+		// 	mat_architecture: [0.79, 0.41, 0.31],
+		// 	mat_terrain:      [0.90, 0.70, 0.40],
+		// 	mat_screen:       [0.31, 0.84, 0.42],
+		// }),
 
 		'mesh_wheel': mesh_load_obj(regl, './meshes/shadow_scene__wheel.obj', {
 			mat_figure_1: [0.8, 0.3, 0.3],
 			mat_tree: [0.17, 0.64, 0.10],
+		}),
+		'mesh_planet': mesh_load_obj(regl, './meshes/sphere.obj', {
+			blase: [0.8, 0.23, 0.8],
+		}),
+		'mesh_sun': mesh_load_obj(regl, './meshes/sphere2.obj', {
+			blase2: [0.9, 0.9, 0.9],
 		}),
 	};
 
@@ -167,27 +173,24 @@ async function main() {
 
 	const lights = [
 		new Light({
+			// position: [0., 0., 10.],
+			// update: (light, {sim_time}) => {
+			// 	const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0., 8.))
+		 		
+			// 	const rotation = mat4.fromXRotation(mat4.create(), sim_time * 1);
+			// 	const composed = mat4.multiply(mat4.create(), rotation, translation);
+			// 	light.position = vec3.transformMat4(vec3.create(), light.position, composed);
+			// 	// light.position = [
+			// 	// 	0.1,
+			// 	// 	Math.sin(sim_time * 0.5) * 12,
+			// 	// 	Math.cos(sim_time * 0.5) * 12,
+			// 	// ];
+			// },
 			update: (light, {sim_time}) => {
-				light.position = [
-					0.1,
-					Math.sin(sim_time * 0.5) * 12,
-					Math.cos(sim_time * 0.5) * 12,
-				];
+				light.position = [0, -8 * Math.sin(sim_time), -8 * Math.cos(sim_time + Math.PI)]
 			},
 			color: [1., 1., 1.],
-			intensity: 10.,
-		}),
-		new Light({
-			position: [0, 0, 1],
-			update: (light, {sim_time}) => {
-				light.position = [
-					Math.sin(sim_time * 5.19 + 1.48) * 0.1,
-					Math.sin(sim_time * 7.9 + 4.85) * 0.1,
-					Math.sin(sim_time * 4.7 + 0.14) * 0.2 + 1,
-				];
-			},
-			color: [1., 0.5, 0.],
-			intensity: 5,
+			intensity: 100.,
 		}),
 	];
 
@@ -306,7 +309,7 @@ async function main() {
 		}
 
 		// Set the whole image to black
-		regl.clear({color: [0, 0, 0, 1]});
+		regl.clear({color: [0.2, 0.2, 0.8, 1]});
 
 		render_ambient(scene_info);
 

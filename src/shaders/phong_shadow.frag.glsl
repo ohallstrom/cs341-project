@@ -45,10 +45,10 @@ void main() {
     
     vec3 int_diff =vec3(0.);
     vec3 int_spec =vec3(0.);
-    
     vec3 dir_from_view = normalize(v2f_position_view);
-    vec3 dir_to_light = normalize( light_position - v2f_position_view ); 
-    float shadow_dist = (textureCube(shadow_cubemap,v2f_position_view- light_position)).r;
+    vec3 dir_to_light = normalize(light_position- v2f_position_view); 
+    vec3 fck = v2f_position_view;
+    float shadow_dist = (textureCube(shadow_cubemap, fck)).r;
 
     if (dot(dir_to_light, N) > 0.){
         int_diff = v2f_diffuse_color * (light_color)* dot(N, dir_to_light); 
@@ -61,7 +61,7 @@ void main() {
     float dist = distance(v2f_position_view, light_position);
     float scale_value = 1./(dist*dist);
 
-    if (shadow_dist*1.01> dist){
+    if (shadow_dist*1.01 > dist){
         color += scale_value*(int_diff + int_spec );
     }
     gl_FragColor = vec4(color, 1.); // output: RGBA in 0..1 range
