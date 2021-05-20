@@ -2,7 +2,7 @@ import {vec3, vec4, mat3, mat4} from "../lib/gl-matrix_3.3.0/esm/index.js"
 import {mat4_to_string, vec_to_string, mat4_matmul_many} from "./icg_math.js"
 
 //DECLARATION OF CONSTANTS
-const RADIUS_PLANET = 8.;
+const RADIUS_PLANET = 12.;
 
 export function init_scene(regl, resources) {
 

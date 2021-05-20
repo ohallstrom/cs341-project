@@ -281,11 +281,11 @@ export function init_light(regl, resources) {
 			phong_lighting_pipeline(batch_draw_calls);
 		}
 
-		visualize_distance_map() {
-			flattened_cubemap_pipeline();
-		}
+		// visualize_distance_map() {
+		// 	flattened_cubemap_pipeline();
+		// }
 
-		// Note: mat_view can differ from scene_mat_view, e.g. when viewing from cube_camera_view
+		// // Note: mat_view can differ from scene_mat_view, e.g. when viewing from cube_camera_view
 		visualize_cube({mat_view, scene_mat_view, mat_projection}) {
 			const light_position_view = transform3DPoint(scene_mat_view, this.position);
 			const m_translation = mat4.fromTranslation(mat4.create(), light_position_view); // place cube at the light position in eye space

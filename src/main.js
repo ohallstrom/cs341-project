@@ -188,13 +188,13 @@ async function main() {
 			intensity: 200.,
 		}),
 		
-		new Light({
-			update: (light, {sim_time}) => {
-				light.position = [0.,(-8* Math.sin(sim_time)),( 12* Math.cos(sim_time))];
-			},
-			color: [1., 1., 1.],
-			intensity: 100.,
-		}),
+		// new Light({
+		// 	update: (light, {sim_time}) => {
+		// 		light.position = [0.,(-8* Math.sin(sim_time)),( 12* Math.cos(sim_time))];
+		// 	},
+		// 	color: [1., 1., 1.],
+		// 	intensity: 100.,
+		// }),
 	];
 
 	/*
@@ -218,39 +218,39 @@ async function main() {
 		debug_overlay.classList.toggle('hide');
 	})
 
-	let vis_cube_camera = false;
-	let vis_cube_camera_side = 0;
+	// let vis_cube_camera = false;
+	// let vis_cube_camera_side = 0;
 
-	const stop_vis_cube = () => {
-		vis_cube_camera = false;
-		vis_cube_camera_side = 0;
-		console.log(`Using normal camera`)
-	}
-	register_button_with_hotkey('btn-nocube', '6', stop_vis_cube)
+	// const stop_vis_cube = () => {
+	// 	vis_cube_camera = false;
+	// 	vis_cube_camera_side = 0;
+	// 	console.log(`Using normal camera`)
+	// }
+	// register_button_with_hotkey('btn-nocube', '6', stop_vis_cube)
 
-	{
-		const elem_view_select = document.getElementById('view-options');
+	// {
+	// 	const elem_view_select = document.getElementById('view-options');
 
-		[0, 1, 2, 3, 4, 5].forEach((side) => {
-			const display_text = (side).toString();
+	// 	[0, 1, 2, 3, 4, 5].forEach((side) => {
+	// 		const display_text = (side).toString();
 
-			const handler = () => {
-				vis_cube_camera = true;
-				vis_cube_camera_side = side;
-				console.log(`Using cube camera for side ${display_text}`)
-			}
+	// 		const handler = () => {
+	// 			vis_cube_camera = true;
+	// 			vis_cube_camera_side = side;
+	// 			console.log(`Using cube camera for side ${display_text}`)
+	// 		}
 
-			register_keyboard_action(display_text, handler);
+	// 		register_keyboard_action(display_text, handler);
 			
-			const entry = document.createElement('span');
-			entry.classList.add('button');
-			entry.classList.add('keyboard');
-			entry.textContent = display_text;
-			entry.addEventListener('click', handler);
-			elem_view_select.appendChild(entry);
-		});
+	// 		const entry = document.createElement('span');
+	// 		entry.classList.add('button');
+	// 		entry.classList.add('keyboard');
+	// 		entry.textContent = display_text;
+	// 		entry.addEventListener('click', handler);
+	// 		elem_view_select.appendChild(entry);
+	// 	});
 
-	}
+	// }
 
 	function activate_preset_view() {
 		is_paused = true;
@@ -259,7 +259,7 @@ async function main() {
 		cam_angle_y = - Math.PI * (1./6.);
 		cam_distance_factor = 0.8;
 		cam_target = [0, 0, 0];
-		stop_vis_cube();
+		//stop_vis_cube();
 		
 		update_cam_transform();
 	}
@@ -297,10 +297,10 @@ async function main() {
 
 		const light_to_visulaize = lights[lights.length - 1];
 
-		if (vis_cube_camera) {
-			active_mat_view = light_to_visulaize.cube_camera_view(vis_cube_camera_side, mat_view);
-			active_mat_projection = light_to_visulaize.get_cube_camera_projection();
-		}
+		// if (vis_cube_camera) {
+		// 	active_mat_view = light_to_visulaize.cube_camera_view(vis_cube_camera_side, mat_view);
+		// 	active_mat_projection = light_to_visulaize.get_cube_camera_projection();
+		// }
 
 		const scene_info = {
 			sim_time:        sim_time,
@@ -325,9 +325,9 @@ async function main() {
 			}
 		}
 
-		if (show_dist_map) {
-			light_to_visulaize.visualize_distance_map();
-		}
+		// if (show_dist_map) {
+		// 	light_to_visulaize.visualize_distance_map();
+		// }
 
 // 		debug_text.textContent = `
 // Hello! Sim time is ${sim_time.toFixed(2)} s
