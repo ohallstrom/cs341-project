@@ -282,8 +282,8 @@ export function init_light(regl, resources) {
 		}
 
 		// visualize_distance_map() {
-		// 	flattened_cubemap_pipeline();
-		// }
+		//  	flattened_cubemap_pipeline();
+		//  }
 
 		// // Note: mat_view can differ from scene_mat_view, e.g. when viewing from cube_camera_view
 		visualize_cube({mat_view, scene_mat_view, mat_projection}) {

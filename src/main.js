@@ -75,7 +75,7 @@ async function main() {
 			blase: [0.2, 1., 0.2],
 		}),
 		'mesh_sun': mesh_load_obj(regl, './meshes/sphere2.obj', {
-			blase: [0.9, 0.9, 0.9],
+			blase2: [0.9, 0.9, 0.9],
 		}),
 	};
 
@@ -208,10 +208,10 @@ async function main() {
 		is_paused = !is_paused
 	})
 
-	let show_dist_map = true;
-	register_button_with_hotkey('btn-distance', 'g', () => {
-		show_dist_map = !show_dist_map
-	})
+	// let show_dist_map = true;
+	// register_button_with_hotkey('btn-distance', 'g', () => {
+	// 	show_dist_map = !show_dist_map
+	// })
 
 
 	register_keyboard_action('z', () => {
@@ -297,10 +297,10 @@ async function main() {
 
 		const light_to_visulaize = lights[lights.length - 1];
 
-		// if (vis_cube_camera) {
-		// 	active_mat_view = light_to_visulaize.cube_camera_view(vis_cube_camera_side, mat_view);
-		// 	active_mat_projection = light_to_visulaize.get_cube_camera_projection();
-		// }
+		//if (vis_cube_camera) {
+			//active_mat_view = light_to_visulaize.cube_camera_view(vis_cube_camera_side, mat_view);
+			//active_mat_projection = light_to_visulaize.get_cube_camera_projection();
+		//}
 
 		const scene_info = {
 			sim_time:        sim_time,
@@ -320,9 +320,9 @@ async function main() {
 			light.render_shadowmap(scene_info);
 			light.draw_phong_contribution(scene_info);
 
-			if(show_dist_map) {
-				light.visualize_cube(scene_info);
-			}
+			// if(show_dist_map) {
+			// 	light.visualize_cube(scene_info);
+			// }
 		}
 
 		// if (show_dist_map) {
