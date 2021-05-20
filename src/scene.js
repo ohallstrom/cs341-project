@@ -1,6 +1,8 @@
 import {vec3, vec4, mat3, mat4} from "../lib/gl-matrix_3.3.0/esm/index.js"
 import {mat4_to_string, vec_to_string, mat4_matmul_many} from "./icg_math.js"
 
+//DECLARATION OF CONSTANTS
+const RADIUS_PLANET = 8.;
 
 export function init_scene(regl, resources) {
 
@@ -52,11 +54,11 @@ export function init_scene(regl, resources) {
 	};
 
 	const scene_actors = [
-		{ // "car"
-			mesh: resources.mesh_wheel,
+		{ //car
+			mesh: resources.mesh_car,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
-				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0., 8.))
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET))
 		 		
 				const rotation = mat4.fromXRotation(actor.mat_model, sim_time * 1);
 				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation)
@@ -77,7 +79,7 @@ export function init_scene(regl, resources) {
 			mesh: resources.mesh_planet,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
-				actor.mat_model = mat4.scale(mat4.create(), mat4.create(), vec3.fromValues(8., 8., 8.));
+				actor.mat_model = mat4.scale(mat4.create(), mat4.create(), vec3.fromValues(RADIUS_PLANET,RADIUS_PLANET,RADIUS_PLANET));
 			},
 		},
 		

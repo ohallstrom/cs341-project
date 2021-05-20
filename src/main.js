@@ -2,11 +2,12 @@
 import {createREGL} from "../lib/regljs_2.1.0/regl.module.js"
 import {vec2, vec3, vec4, mat2, mat3, mat4} from "../lib/gl-matrix_3.3.0/esm/index.js"
 import {DOM_loaded_promise, load_text, load_image, register_button_with_hotkey, register_keyboard_action} from "./icg_web.js"
-import {deg_to_rad, mat4_to_string, vec_to_string, mat4_matmul_many} from "./icg_math.js"
+import {deg_to_rad, mat4_to_string, vec_to_string, mat4_matmul_many, vec4FromVec3} from "./icg_math.js"
 import {mesh_load_obj, icg_mesh_make_uv_sphere} from "./icg_mesh.js"
 
 import {init_light} from "./light.js"
 import {init_scene} from "./scene.js"
+
 
 async function main() {
 	/* const in JS means the variable will not be bound to a new value, but the value can be modified (if its an object or array)
@@ -60,22 +61,21 @@ async function main() {
 		'shader_viscube_vert': load_text('./src/shaders/cubemap_visualization_cube.vert.glsl'),
 		'shader_viscube_frag': load_text('./src/shaders/cubemap_visualization_cube.frag.glsl'),
 
-		//'mesh_scene': load_mesh_obj(regl, './meshes/shadow_scene_1.obj'),
-		// 'mesh_terrain': mesh_load_obj(regl, './meshes/shadow_scene__terrain.obj', {
-		// 	mat_architecture: [0.79, 0.41, 0.31],
-		// 	mat_terrain:      [0.90, 0.70, 0.40],
-		// 	mat_screen:       [0.31, 0.84, 0.42],
-		// }),
+		'mesh_car': mesh_load_obj(regl, './meshes/racing_car.obj', {
+			wheels: [0.2,0.2,0.2],
+			car_body_1: [1.,1.,1.],
+			car_body: [0.86,0.1,0.1],
+			engine_grille: [0.6,0.6,0.6],
+			rear_lights: [1.,0.8,0.],
+			glass: [0.3,0.75,1.],
+			headlight: [1., 0.8,0.],
 
-		'mesh_wheel': mesh_load_obj(regl, './meshes/shadow_scene__wheel.obj', {
-			mat_figure_1: [0.8, 0.3, 0.3],
-			mat_tree: [0.17, 0.64, 0.10],
 		}),
-		'mesh_planet': mesh_load_obj(regl, './meshes/sphere.obj', {
-			blase: [0.8, 0.23, 0.8],
+		'mesh_planet': mesh_load_obj(regl, './meshes/planet.obj', {
+			blase: [0.2, 1., 0.2],
 		}),
 		'mesh_sun': mesh_load_obj(regl, './meshes/sphere2.obj', {
-			blase2: [0.9, 0.9, 0.9],
+			blase: [0.9, 0.9, 0.9],
 		}),
 	};
 
@@ -104,8 +104,7 @@ async function main() {
 	let cam_target = [0, 0, 0];
 
 	function update_cam_transform() {
-		/* TODO 4.1.0
-		* Copy your solution to Task 2.2 of assignment 5.
+		/*
 		Calculate the world-to-camera transformation matrix.
 		The camera orbits the scene
 		* cam_distance_base * cam_distance_factor = distance of the camera from the (0, 0, 0) point
@@ -172,22 +171,26 @@ async function main() {
 	const Light = init_light(regl, resources);
 
 	const lights = [
+
 		new Light({
-			// position: [0., 0., 10.],
-			// update: (light, {sim_time}) => {
-			// 	const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0., 8.))
-		 		
-			// 	const rotation = mat4.fromXRotation(mat4.create(), sim_time * 1);
-			// 	const composed = mat4.multiply(mat4.create(), rotation, translation);
-			// 	light.position = vec3.transformMat4(vec3.create(), light.position, composed);
-			// 	// light.position = [
-			// 	// 	0.1,
-			// 	// 	Math.sin(sim_time * 0.5) * 12,
-			// 	// 	Math.cos(sim_time * 0.5) * 12,
-			// 	// ];
-			// },
+			position: [0.,0.,25.],
+			color: [1.,.1,1.],
+			intensity: 200.,
+		}),
+		new Light({
+			position: [0.,25.,0.],
+			color: [1.,.1,1.],
+			intensity: 200.,
+		}),
+		new Light({
+			position: [25.,0.,0.],
+			color: [1.,.1,1.],
+			intensity: 200.,
+		}),
+		
+		new Light({
 			update: (light, {sim_time}) => {
-				light.position = [0, -8 * Math.sin(sim_time), -8 * Math.cos(sim_time + Math.PI)]
+				light.position = [0.,(-8* Math.sin(sim_time)),( 12* Math.cos(sim_time))];
 			},
 			color: [1., 1., 1.],
 			intensity: 100.,
@@ -305,10 +308,10 @@ async function main() {
 			scene_mat_view:  mat_view,
 			mat_projection:  active_mat_projection, // can differ from mat_projection for debugging!
 			actors:          actors,
-			ambient_light_color: vec3.fromValues(0.25, 0.25, 0.25),
+			ambient_light_color: vec3.fromValues(0.8, 0.8, 0.8),
 		}
 
-		// Set the whole image to black
+		// Set the whole image to blue
 		regl.clear({color: [0.2, 0.2, 0.8, 1]});
 
 		render_ambient(scene_info);
