@@ -42,30 +42,27 @@ void main() {
     * instead of additive tolerance: compare the fragment's distance to 1.01x the
     * distance from the shadow map.
     ***/
-    float cell_number = 4.;
+    
     vec3 int_diff =vec3(0.);
     vec3 int_spec =vec3(0.);
+    
     vec3 dir_from_view = normalize(v2f_position_view);
-    vec3 dir_to_light = normalize(light_position- v2f_position_view); 
-    vec3 fck = v2f_position_view;
-    float shadow_dist = (textureCube(shadow_cubemap, fck)).r;
+    vec3 dir_to_light = normalize( light_position - v2f_position_view ); 
+    float shadow_dist = (textureCube(shadow_cubemap,v2f_position_view- light_position)).r;
 
-    //if (dot(dir_to_light, N) > 0.){
-    int_diff = v2f_diffuse_color * (light_color)* floor(cell_number*dot(N, dir_to_light))/cell_number; 
-    vec3 r = reflect(dir_to_light, N);
-    if (dot(N,dir_to_light)>0. && dot(r, dir_from_view)>0.) {
-        int_spec = v2f_specular_color *(light_color) * pow(floor(cell_number*dot(r, dir_from_view))/cell_number, shininess);
-    } 
-    //}
+    if (dot(dir_to_light, N) > 0.){
+        int_diff = v2f_diffuse_color * (light_color)* floor(4.*dot(N, dir_to_light))/4.; 
+        vec3 r = reflect(dir_to_light, N);
+        if (dot(N,dir_to_light)>0. && dot(r, dir_from_view)>0.) {
+            int_spec = v2f_specular_color *(light_color) * pow(floor(4.*dot(r, dir_from_view))/4., shininess);
+        } 
+    }
 
     float dist = distance(v2f_position_view, light_position);
     float scale_value = 1./(dist*dist);
-    // alternative celling
-    // float scale_value_pre1 = 1./(dist*dist);
-    // float scale_value = floor(scale_value_pre1*200.)/200.;
 
-    if (shadow_dist*1.01 > dist){
-        color += scale_value*(int_diff + int_spec);
+    if (shadow_dist*1.01> dist){
+        color += scale_value*(int_diff + int_spec );
     }
     gl_FragColor = vec4(color, 1.); // output: RGBA in 0..1 range
 }
