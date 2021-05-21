@@ -181,9 +181,9 @@ async function main() {
 		// 	intensity: 10.,
 		// }),
 		new Light({
-			position: [0.,0.,20.],
+			position: [0.,0.,70.],
 			color: [1.,0.5,0.5],
-			intensity: 20.,
+			intensity: 300.,
 		}),
 		// new Light({
 		// 	position: [0.,10.,20.],
