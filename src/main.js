@@ -57,6 +57,8 @@ async function main() {
 		'shader_ambient_frag':      load_text('./src/shaders/ambient_color.frag.glsl'),
 		'shader_phong_shadow_vert': load_text('./src/shaders/phong_shadow.vert.glsl'),
 		'shader_phong_shadow_frag': load_text('./src/shaders/phong_shadow.frag.glsl'),
+		'shader_cell_shadow_vert': load_text('./src/shaders/cell_shadow.vert.glsl'),
+		'shader_cell_shadow_frag': load_text('./src/shaders/cell_shadow.frag.glsl'),
 		
 		'shader_viscube_vert': load_text('./src/shaders/cubemap_visualization_cube.vert.glsl'),
 		'shader_viscube_frag': load_text('./src/shaders/cubemap_visualization_cube.frag.glsl'),
@@ -72,10 +74,10 @@ async function main() {
 
 		}),
 		'mesh_planet': mesh_load_obj(regl, './meshes/planet.obj', {
-			blase: [0.2, 1., 0.2],
+			blase: [0.2, 0.2, 0.2],
 		}),
 		'mesh_sun': mesh_load_obj(regl, './meshes/sphere2.obj', {
-			blase2: [0.9, 0.9, 0.9],
+			blase: [0.9, 0.9, 0.9],
 		}),
 	};
 
@@ -172,25 +174,26 @@ async function main() {
 
 	const lights = [
 
+		// new Light({
+		// 	position: [0.,0.,100.],
+		// 	color: [1.,.1,1.],
+		// 	intensity: 10.,
+		// }),
 		new Light({
-			position: [0.,0.,25.],
+			position: [0.,0.,20.],
 			color: [1.,.1,1.],
-			intensity: 200.,
+			intensity: 10.,
 		}),
-		new Light({
-			position: [0.,25.,0.],
-			color: [1.,.1,1.],
-			intensity: 200.,
-		}),
-		new Light({
-			position: [25.,0.,0.],
-			color: [1.,.1,1.],
-			intensity: 200.,
-		}),
+		// new Light({
+		// 	position: [0.,10.,20.],
+		// 	color: [1.0,1.0,1.0],
+		// 	intensity: 5.,
+		// }),
 		
 		// new Light({
 		// 	update: (light, {sim_time}) => {
 		// 		light.position = [0.,(-8* Math.sin(sim_time)),( 12* Math.cos(sim_time))];
+		// 		light.position = actors.position
 		// 	},
 		// 	color: [1., 1., 1.],
 		// 	intensity: 100.,
@@ -206,6 +209,11 @@ async function main() {
 	let is_paused = false;
 	register_button_with_hotkey('btn-pause', 'p', () => {
 		is_paused = !is_paused
+	})
+
+	let cell_is_used = false;
+	register_button_with_hotkey('btn-shade','s', () => {
+		cell_is_used = !cell_is_used
 	})
 
 	// let show_dist_map = true;
@@ -255,10 +263,10 @@ async function main() {
 	function activate_preset_view() {
 		is_paused = true;
 		sim_time = 24.0;
-		cam_angle_z = - Math.PI * 0.50;
-		cam_angle_y = - Math.PI * (1./6.);
+		cam_angle_z = 0.; //- Math.PI * 0.50;
+		cam_angle_y = 0.; //- Math.PI * (1./6.);
 		cam_distance_factor = 0.8;
-		cam_target = [0, 0, 0];
+		cam_target = [0, 0, 12];
 		//stop_vis_cube();
 		
 		update_cam_transform();
@@ -297,10 +305,10 @@ async function main() {
 
 		const light_to_visulaize = lights[lights.length - 1];
 
-		//if (vis_cube_camera) {
-			//active_mat_view = light_to_visulaize.cube_camera_view(vis_cube_camera_side, mat_view);
-			//active_mat_projection = light_to_visulaize.get_cube_camera_projection();
-		//}
+		// if (vis_cube_camera) {
+		// 	active_mat_view = light_to_visulaize.cube_camera_view(vis_cube_camera_side, mat_view);
+		// 	active_mat_projection = light_to_visulaize.get_cube_camera_projection();
+		// }
 
 		const scene_info = {
 			sim_time:        sim_time,
@@ -308,23 +316,30 @@ async function main() {
 			scene_mat_view:  mat_view,
 			mat_projection:  active_mat_projection, // can differ from mat_projection for debugging!
 			actors:          actors,
-			ambient_light_color: vec3.fromValues(0.8, 0.8, 0.8),
+			ambient_light_color: vec3.fromValues(0.4, 0.4, 0.4),
+			cell_is_used: 	 cell_is_used,
 		}
 
 		// Set the whole image to blue
-		regl.clear({color: [0.2, 0.2, 0.8, 1]});
+		//regl.clear({color: [0.2, 0.2, 0.8, 1]});
+		regl.clear({color: [0.0, 0.0, 0.0, 1]});
 
 		render_ambient(scene_info);
+		
 
 		for (const light of lights) {
-			light.render_shadowmap(scene_info);
+			light.render_shadowmap(scene_info)
+
+
 			light.draw_phong_contribution(scene_info);
+
+			
 
 			// if(show_dist_map) {
 			// 	light.visualize_cube(scene_info);
 			// }
 		}
-
+		
 		// if (show_dist_map) {
 		// 	light_to_visulaize.visualize_distance_map();
 		// }
