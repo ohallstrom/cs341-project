@@ -64,5 +64,8 @@ void main() {
     if (shadow_dist*1.01> dist){
         color += scale_value*(int_diff + int_spec );
     }
+
+
+
     gl_FragColor = vec4(color, 1.); // output: RGBA in 0..1 range
 }
