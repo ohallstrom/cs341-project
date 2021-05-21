@@ -67,7 +67,7 @@ void main() {
     
     
     //
-    if (dot(-dir_from_view, v2f_normal) < mix(0.2,0.2, max(0.,dot(v2f_normal, -dir_to_light)))){
+    if (dot(-dir_from_view, v2f_normal) < mix(0.1,0.3, max(0.,dot(v2f_normal, -dir_to_light)))){
         gl_FragColor = vec4(1.,1.,1., 1.);
     } else {
         gl_FragColor = vec4(color, 1.); // output: RGBA in 0..1 range
