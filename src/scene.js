@@ -4,7 +4,7 @@ import {mat4_to_string, vec_to_string, mat4_matmul_many} from "./icg_math.js"
 //DECLARATION OF CONSTANTS
 const RADIUS_PLANET = 12.;
 
-
+var car_speed = 0.5;
 export function init_scene(regl, resources) {
 
 	const ambient_pass_pipeline = regl({
@@ -26,7 +26,7 @@ export function init_scene(regl, resources) {
 
 		cull: {enable: false},
 	});
-	
+
 	function update_simulation(scene_info) {
 		scene_info.actors.forEach(actor => {
 			if (actor.animation_tick) {
@@ -34,7 +34,7 @@ export function init_scene(regl, resources) {
 			}
 		});
 	}
-
+	
 	function render_ambient({actors, mat_view, mat_projection, ambient_light_color}) {
 		const batch_draw_calls = actors.map((actor) => {
 			const mat_model      = actor.mat_model;
@@ -61,7 +61,7 @@ export function init_scene(regl, resources) {
 			animation_tick: (actor, {sim_time}) => {
 				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
 		 		//actor.mat_model = translation
-				const rotation = mat4.fromXRotation(actor.mat_model, sim_time * 0.1);
+				const rotation = mat4.fromXRotation(actor.mat_model, sim_time *car_speed);
 				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation);
 				//mat4_matmul_many(actor.mat_model, rotation);			
 			},
@@ -81,6 +81,14 @@ export function init_scene(regl, resources) {
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
 				actor.mat_model = mat4.scale(mat4.create(), mat4.create(), vec3.fromValues(RADIUS_PLANET,RADIUS_PLANET,RADIUS_PLANET));
+			},
+		},
+
+		{ //rocket
+			mesh: resources.mesh_rocket,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				actor.mat_model = mat4.fromTranslation(mat4.create(), vec3.fromValues(2., 0., RADIUS_PLANET));				
 			},
 		},
 		

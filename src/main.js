@@ -45,7 +45,6 @@ async function main() {
 	* edit config in firefox
 		security.fileuri.strict_origin_policy = false
 	*/
-
 	// Start downloads in parallel
 	const resources = {
 		'shader_shadowmap_gen_vert': load_text('./src/shaders/shadowmap_gen.vert.glsl'),
@@ -70,7 +69,7 @@ async function main() {
 			engine_grille: [0.6,0.6,0.6],
 			rear_lights: [1.,0.8,0.],
 			glass: [0.3,0.75,1.],
-			headlight: [1., 0.8,0.],
+			headlight: [1.,0.8,0.],
 
 		}),
 		'mesh_planet': mesh_load_obj(regl, './meshes/planet.obj', {
@@ -79,6 +78,14 @@ async function main() {
 		}),
 		'mesh_sun': mesh_load_obj(regl, './meshes/sun.obj', {
 			sun: [0.9, 0.9, 0.1],
+		}),
+		'mesh_rocket': mesh_load_obj(regl, './meshes/rocket.obj', {
+			Material: [1.,0.2,0.],
+			Material2: [1.,1.,1.],
+			Material3: [1.,1.,1.],
+			Material4: [1.,1.,0.],
+			Material5: [1.,1.,0.],
+			Material6: [0.2,0.2,0.2],
 		}),
 	};
 
@@ -165,6 +172,7 @@ async function main() {
 		update_cam_transform();
 	})
 
+
 	/*---------------------------------------------------------------
 		Actors
 	---------------------------------------------------------------*/
@@ -174,33 +182,35 @@ async function main() {
 	const Light = init_light(regl, resources);
 
 	const lights = [
-
-		// new Light({
-		// 	position: [0.,0.,100.],
-		// 	color: [1.,.1,1.],
-		// 	intensity: 10.,
-		// }),
-		new Light({
-			position: [0.,0.,20.],
-			color: [1.,0.5,0.5],
-			intensity: 20.,
-		}),
-		// new Light({
-		// 	position: [0.,10.,20.],
-		// 	color: [1.0,1.0,1.0],
-		// 	intensity: 5.,
-		// }),
 		
-		// new Light({
-		// 	update: (light, {sim_time}) => {
-		// 		light.position = [0.,(-8* Math.sin(sim_time)),( 12* Math.cos(sim_time))];
-		// 		light.position = actors.position
-		// 	},
-		// 	color: [1., 1., 1.],
-		// 	intensity: 100.,
-		// }),
+		new Light({
+			update: (light, {sim_time}) => {
+				light.position = [35*Math.cos(sim_time*0.05), 35*Math.sin(sim_time*0.05), 0.]
+			},
+			color: [1., 1., 1.],
+			intensity: 100.,
+		}),
+
 	];
 
+
+	//head lights:
+	const headl_R = new Light({
+			update: (light, {sim_time}) => {
+				light.position = [-0.75,12.95* -(Math.sin((sim_time+0.3)*0.5)),( 12.95* Math.cos((sim_time+0.3)*0.5))];
+			},
+			color: [1., 0.9, 0.2],
+			intensity: 0.65,
+		});
+	const headl_L = new Light({
+			update: (light, {sim_time}) => {
+				light.position = [0.75,12.95* -(Math.sin((sim_time+0.3)*0.5)),( 12.95* Math.cos((sim_time+0.3)*0.5))];
+			},
+			color: [1., 0.9, 0.2],
+			intensity: 0.65,
+		});
+	
+		
 	/*
 		UI
 	*/
@@ -217,49 +227,35 @@ async function main() {
 		cell_is_used = !cell_is_used
 	})
 
-	// let show_dist_map = true;
-	// register_button_with_hotkey('btn-distance', 'g', () => {
-	// 	show_dist_map = !show_dist_map
-	// })
-
-
 	register_keyboard_action('z', () => {
 		debug_overlay.classList.toggle('hide');
 	})
 
-	// let vis_cube_camera = false;
-	// let vis_cube_camera_side = 0;
+	let light_on= false;
+	register_button_with_hotkey('btn-shade','l', () => {
+		light_on = !light_on
+		if (light_on){
+			lights.push(headl_R);
+			lights.push(headl_L);
+		}else{
+			lights.pop();
+			lights.pop();
+		}
+	})
+	// let speed = get_car_speed();
+	// register_keyboard_action('u', () => {
+	// 	if (speed < 1.){
+	// 		speed += 0.1;
+	// 		set_car_speed(speed);
+	// 	}
+	// })
 
-	// const stop_vis_cube = () => {
-	// 	vis_cube_camera = false;
-	// 	vis_cube_camera_side = 0;
-	// 	console.log(`Using normal camera`)
-	// }
-	// register_button_with_hotkey('btn-nocube', '6', stop_vis_cube)
-
-	// {
-	// 	const elem_view_select = document.getElementById('view-options');
-
-	// 	[0, 1, 2, 3, 4, 5].forEach((side) => {
-	// 		const display_text = (side).toString();
-
-	// 		const handler = () => {
-	// 			vis_cube_camera = true;
-	// 			vis_cube_camera_side = side;
-	// 			console.log(`Using cube camera for side ${display_text}`)
-	// 		}
-
-	// 		register_keyboard_action(display_text, handler);
-			
-	// 		const entry = document.createElement('span');
-	// 		entry.classList.add('button');
-	// 		entry.classList.add('keyboard');
-	// 		entry.textContent = display_text;
-	// 		entry.addEventListener('click', handler);
-	// 		elem_view_select.appendChild(entry);
-	// 	});
-
-	// }
+	// register_keyboard_action('d', () => {
+	// 	if (speed > 0.){
+	// 		speed -= 0.1;
+	// 		set_car_speed(speed);
+	// 	}
+	// })
 
 	function activate_preset_view() {
 		is_paused = true;
@@ -267,9 +263,7 @@ async function main() {
 		cam_angle_z = 0.; //- Math.PI * 0.50;
 		cam_angle_y = 0.; //- Math.PI * (1./6.);
 		cam_distance_factor = 0.8;
-		cam_target = [0, 0, 12];
-		//stop_vis_cube();
-		
+		cam_target = [0, 0, 12];		
 		update_cam_transform();
 	}
 	register_button_with_hotkey('btn-preset-view', 'c', activate_preset_view)
@@ -305,12 +299,6 @@ async function main() {
 		update_simulation({sim_time: sim_time, actors: actors});
 
 		const light_to_visulaize = lights[lights.length - 1];
-
-		// if (vis_cube_camera) {
-		// 	active_mat_view = light_to_visulaize.cube_camera_view(vis_cube_camera_side, mat_view);
-		// 	active_mat_projection = light_to_visulaize.get_cube_camera_projection();
-		// }
-
 		const scene_info = {
 			sim_time:        sim_time,
 			mat_view:        active_mat_view, // can differ from mat_view for debugging!
@@ -321,29 +309,37 @@ async function main() {
 			cell_is_used: 	 cell_is_used,
 		}
 
-		// Set the whole image to blue
-		//regl.clear({color: [0.2, 0.2, 0.8, 1]});
 		regl.clear({color: [0.0, 0.0, 0.0, 1]});
 
 		render_ambient(scene_info);
-		
 
 		for (const light of lights) {
 			light.render_shadowmap(scene_info)
 
 
 			light.draw_phong_contribution(scene_info);
-
-			
-
-			// if(show_dist_map) {
-			// 	light.visualize_cube(scene_info);
-			// }
 		}
 		
-		// if (show_dist_map) {
-		// 	light_to_visulaize.visualize_distance_map();
+		// if (light_on){
+		// 	// const headl = new Light({
+		// 	// 	position: [0.,0.,-20.],
+		// 	// 	color: [1.,0.5,0.5],
+		// 	// 	intensity: 20.,
+		// 	// })
+		// 	const headlights = new Light({
+		// 		update: (light, {sim_time}) => {
+		// 			light.position = [0., -13., 13.]
+		// 		},
+		// 		color: [1., 1., 1.],
+		// 		intensity: 200.,
+		// 	})
+		// 	// headl.render_shadowmap(scene_info);
+		// 	// headl.draw_phong_contribution(scene_info);
+		// 	headlights.render_shadowmap(scene_info);
+		// 	headlights.draw_phong_contribution(scene_info);
 		// }
+
+
 
 // 		debug_text.textContent = `
 // Hello! Sim time is ${sim_time.toFixed(2)} s
