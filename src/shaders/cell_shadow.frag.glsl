@@ -54,7 +54,7 @@ void main() {
         int_diff = v2f_diffuse_color * (light_color)* floor(4.*dot(N, dir_to_light))/4.; 
         vec3 r = reflect(dir_to_light, N);
         if (dot(N,dir_to_light)>0. && dot(r, dir_from_view)>0.) {
-            int_spec = v2f_specular_color *(light_color) * pow(floor(4.*dot(r, dir_from_view))/4., shininess);
+            int_spec = v2f_specular_color *(light_color) * pow(floor(2.*dot(r, dir_from_view))/2., shininess);
         } 
     }
 
@@ -64,5 +64,12 @@ void main() {
     if (shadow_dist*1.01> dist){
         color += scale_value*(int_diff + int_spec );
     }
-    gl_FragColor = vec4(color, 1.); // output: RGBA in 0..1 range
+    
+    
+    //
+    if (dot(-dir_from_view, v2f_normal) < mix(0.2,0.2, max(0.,dot(v2f_normal, -dir_to_light)))){
+        gl_FragColor = vec4(1.,1.,1., 1.);
+    } else {
+        gl_FragColor = vec4(color, 1.); // output: RGBA in 0..1 range
+    }
 }
