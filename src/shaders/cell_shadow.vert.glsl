@@ -23,17 +23,14 @@ void main() {
 	of this shader (v2f_position_view and v2f_normal) and the gl_Position.
     */
 	// viewing vector (from camera to vertex in view coordinates), camera is at vec3(0, 0, 0) in cam coords
+	v2f_position_view = (mat_model_view * position_v4).xyz; 
 
-	v2f_position_view = (mat_model_view * position_v4).xyz; // TODO calculate WRO normalize?
-	// direction to light source
-	//v2f_dir_to_light = normalize(light_position.xyz - (mat_model_view * vec4(position, 1.)).xyz );//light_position - vec3(0, 0, 0); // TODO calculate 
 	// transform normal to camera coordinates
-	v2f_normal = normalize(mat_normals * normal); // TODO apply normal transformation
+	v2f_normal = normalize(mat_normals * normal); 
 
 	gl_Position = mat_mvp * position_v4 ;
 	
 	// transform normal to camera coordinates
-
 	v2f_diffuse_color = diffuse_color;
 	v2f_specular_color = specular_color;
 }
