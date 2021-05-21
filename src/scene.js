@@ -4,6 +4,7 @@ import {mat4_to_string, vec_to_string, mat4_matmul_many} from "./icg_math.js"
 //DECLARATION OF CONSTANTS
 const RADIUS_PLANET = 12.;
 
+
 export function init_scene(regl, resources) {
 
 	const ambient_pass_pipeline = regl({
@@ -58,10 +59,10 @@ export function init_scene(regl, resources) {
 			mesh: resources.mesh_car,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
-				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET))
-		 		
-				const rotation = mat4.fromXRotation(actor.mat_model, sim_time * 1);
-				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation)
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET));
+		 		//actor.mat_model = translation
+				const rotation = mat4.fromXRotation(actor.mat_model, sim_time * 0.1);
+				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation);
 				//mat4_matmul_many(actor.mat_model, rotation);			
 			},
 		},
@@ -69,9 +70,9 @@ export function init_scene(regl, resources) {
 			mesh: resources.mesh_sun,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
-				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(40., 0., 0.))	
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(40., 0., 0.));	
 				const rotation = mat4.fromZRotation(actor.mat_model, sim_time * 0.05);
-				const composed = mat4.multiply(mat4.create(), rotation, translation)
+				const composed = mat4.multiply(mat4.create(), rotation, translation);
 				actor.mat_model = mat4.scale(mat4.create(), composed, vec3.fromValues(2., 2., 2.));
 			},
 		},
@@ -91,4 +92,5 @@ export function init_scene(regl, resources) {
 		render_ambient,
 	}
 }
+
 
