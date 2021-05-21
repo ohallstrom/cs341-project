@@ -114,7 +114,7 @@ export function init_light(regl, resources) {
 			light_color:     regl.prop('light_color'),
 			shadow_cubemap:  shadow_cubemap,
 
-			shininess: 0.8,
+			shininess: 0.5,
 		},
 
 		vert: resources.shader_cell_shadow_vert,
