@@ -91,6 +91,14 @@ export function init_scene(regl, resources) {
 				actor.mat_model = mat4.fromTranslation(mat4.create(), vec3.fromValues(2., 0., RADIUS_PLANET));				
 			},
 		},
+	
+		{ //marvin
+			mesh: resources.mesh_marvin,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				actor.mat_model = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0., RADIUS_PLANET));				
+			},
+		},
 		
 	];
 
