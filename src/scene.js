@@ -59,7 +59,7 @@ export function init_scene(regl, resources) {
 			mesh: resources.mesh_car,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
-				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET));
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
 		 		//actor.mat_model = translation
 				const rotation = mat4.fromXRotation(actor.mat_model, sim_time * 0.1);
 				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation);

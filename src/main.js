@@ -74,9 +74,11 @@ async function main() {
 
 		}),
 		'mesh_planet': mesh_load_obj(regl, './meshes/planet.obj', {
+			planet: [0.2, 1., 0.2],
+
 		}),
-		'mesh_sun': mesh_load_obj(regl, './meshes/sphere2.obj', {
-			blase: [0.9, 0.9, 0.9],
+		'mesh_sun': mesh_load_obj(regl, './meshes/sun.obj', {
+			sun: [0.9, 0.9, 0.1],
 		}),
 	};
 
@@ -180,8 +182,8 @@ async function main() {
 		// }),
 		new Light({
 			position: [0.,0.,20.],
-			color: [1.,.1,1.],
-			intensity: 10.,
+			color: [1.,0.5,0.5],
+			intensity: 20.,
 		}),
 		// new Light({
 		// 	position: [0.,10.,20.],
