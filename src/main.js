@@ -74,7 +74,6 @@ async function main() {
 
 		}),
 		'mesh_planet': mesh_load_obj(regl, './meshes/planet.obj', {
-			blase: [0.2, 0.2, 0.2],
 		}),
 		'mesh_sun': mesh_load_obj(regl, './meshes/sphere2.obj', {
 			blase: [0.9, 0.9, 0.9],
