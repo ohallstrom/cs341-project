@@ -20,9 +20,29 @@ export function init_scene(regl, resources) {
 			mat_mvp:     regl.prop('mat_mvp'),
 			light_color: regl.prop('ambient_light_color'),
 		},	
-
+		
 		vert: resources.shader_ambient_vert,
 		frag: resources.shader_ambient_frag,
+
+		cull: {enable: false},
+	});
+
+	const perlin_pass_pipeline = regl({
+		attributes: {
+			position: regl.prop('mesh.vertex_positions'),
+			color:    regl.prop('mesh.vertex_color'),
+		},
+		// Faces, as triplets of vertex indices
+		elements: regl.prop('mesh.faces'),
+
+		// Uniforms: global data available to the shader
+		uniforms: {
+			mat_mvp:     regl.prop('mat_mvp'),
+			light_color: regl.prop('ambient_light_color'),
+		},	
+
+		vert: resources.shader_perlin_vert,
+		frag: resources.shader_perlin_frag,
 
 		cull: {enable: false},
 	});
@@ -50,8 +70,26 @@ export function init_scene(regl, resources) {
 				ambient_light_color: ambient_light_color,
 			}
 		});
-
 		ambient_pass_pipeline(batch_draw_calls);
+	};
+
+	function render_perlin({actors, mat_view, mat_projection, ambient_light_color}) {
+		const batch_draw_calls = actors.map((actor) => {
+			const mat_model      = actor.mat_model;
+			const mat_mvp        = mat4.create();
+			const mat_model_view = mat4.create();
+
+			mat4_matmul_many(mat_model_view, mat_view, mat_model);
+			mat4_matmul_many(mat_mvp, mat_projection, mat_model_view);
+
+			return {
+				mesh:        actor.mesh,
+				mat_mvp:     mat_mvp,
+				ambient_light_color: ambient_light_color,
+			}
+		});
+
+		perlin_pass_pipeline(batch_draw_calls);
 	};
 
 	const scene_actors = [
@@ -76,14 +114,6 @@ export function init_scene(regl, resources) {
 				actor.mat_model = mat4.scale(mat4.create(), composed, vec3.fromValues(2., 2., 2.));
 			},
 		},
-		{ //planet
-			mesh: resources.mesh_planet,
-			mat_model: mat4.create(),
-			animation_tick: (actor, {sim_time}) => {
-				actor.mat_model = mat4.scale(mat4.create(), mat4.create(), vec3.fromValues(RADIUS_PLANET,RADIUS_PLANET,RADIUS_PLANET));
-			},
-		},
-
 		{ //rocket
 			mesh: resources.mesh_rocket,
 			mat_model: mat4.create(),
@@ -102,10 +132,22 @@ export function init_scene(regl, resources) {
 		
 	];
 
+	const perlin_actors = [
+		{ //planet
+			mesh: resources.mesh_planet,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				actor.mat_model = mat4.scale(mat4.create(), mat4.create(), vec3.fromValues(RADIUS_PLANET,RADIUS_PLANET,RADIUS_PLANET));
+			},
+		},
+	];
+
 	return {
 		actors: scene_actors,
+		perlin_actors: perlin_actors,
 		update_simulation,
 		render_ambient,
+		render_perlin,
 	}
 }
 

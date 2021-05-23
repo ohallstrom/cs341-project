@@ -54,10 +54,20 @@ async function main() {
 
 		'shader_ambient_vert':      load_text('./src/shaders/ambient_color.vert.glsl'),
 		'shader_ambient_frag':      load_text('./src/shaders/ambient_color.frag.glsl'),
+
+		'shader_perlin_vert':      load_text('./src/shaders/ambient_perlin.vert.glsl'),
+		'shader_perlin_frag':      load_text('./src/shaders/ambient_perlin.frag.glsl'),
+
+
 		'shader_phong_shadow_vert': load_text('./src/shaders/phong_shadow.vert.glsl'),
 		'shader_phong_shadow_frag': load_text('./src/shaders/phong_shadow.frag.glsl'),
 		'shader_cell_shadow_vert': load_text('./src/shaders/cell_shadow.vert.glsl'),
 		'shader_cell_shadow_frag': load_text('./src/shaders/cell_shadow.frag.glsl'),
+
+		'shader_perlin_phong_shadow_vert': load_text('./src/shaders/phong_perlin_shadow.vert.glsl'),
+		'shader_perlin_phong_shadow_frag': load_text('./src/shaders/phong_perlin_shadow.frag.glsl'),
+		'shader_perlin_cell_shadow_vert': load_text('./src/shaders/cell_perlin_shadow.vert.glsl'),
+		'shader_perlin_cell_shadow_frag': load_text('./src/shaders/cell_perlin_shadow.frag.glsl'),
 		
 		'shader_viscube_vert': load_text('./src/shaders/cubemap_visualization_cube.vert.glsl'),
 		'shader_viscube_frag': load_text('./src/shaders/cubemap_visualization_cube.frag.glsl'),
@@ -180,7 +190,7 @@ async function main() {
 		Actors
 	---------------------------------------------------------------*/
 
-	const {actors, update_simulation, render_ambient} = init_scene(regl, resources);
+	const {actors, perlin_actors, update_simulation, render_ambient, render_perlin} = init_scene(regl, resources);
 
 	const Light = init_light(regl, resources);
 
@@ -299,7 +309,10 @@ async function main() {
 		for (const light of lights) {
 			light.update_simulation({sim_time: sim_time});
 		}
+		
 		update_simulation({sim_time: sim_time, actors: actors});
+		update_simulation({sim_time: sim_time, actors: perlin_actors});
+
 
 		const light_to_visulaize = lights[lights.length - 1];
 		const scene_info = {
@@ -312,15 +325,29 @@ async function main() {
 			cell_is_used: 	 cell_is_used,
 		}
 
+		const perlin_info = {
+			sim_time:        sim_time,
+			mat_view:        active_mat_view, // can differ from mat_view for debugging!
+			scene_mat_view:  mat_view,
+			mat_projection:  active_mat_projection, // can differ from mat_projection for debugging!
+			actors:          perlin_actors,
+			ambient_light_color: vec3.fromValues(0.4, 0.4, 0.4),
+			cell_is_used: 	 cell_is_used,
+		}
+
 		regl.clear({color: [0.0, 0.0, 0.0, 1]});
 
 		render_ambient(scene_info);
+		render_perlin(perlin_info);
 
 		for (const light of lights) {
 			light.render_shadowmap(scene_info)
+			light.render_shadowmap(perlin_info)
 
 
 			light.draw_phong_contribution(scene_info);
+			light.draw_perlin_phong_contribution(perlin_info);
+
 		}
 		
 		// if (light_on){

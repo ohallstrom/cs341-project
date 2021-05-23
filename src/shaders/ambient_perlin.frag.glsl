@@ -1,8 +1,14 @@
-// this version is needed for: indexing an array, const array, modulo %
 precision highp float;
+		
+varying vec3 v2f_color;
+varying vec3 v2f_position;
+
+uniform vec3 light_color;
+
+
+const float ambient_intensity = 0.15;
 
 #define NUM_GRADIENTS 12
-		
 
 // -- Gradient table --
 vec2 gradients(int i) {
@@ -37,10 +43,12 @@ float blending_weight_poly(float t) {
 	return t*t*t*(t*(t*6.0 - 15.0)+10.0);
 }
 
-
-// ==============================================================
-// 2D Perlin noise evaluation
 float perlin_noise(vec2 point) {
+	/* TODO 4.1
+	Implement 2D perlin noise as described in the handout.
+	You may find a glsl `for` loop useful here, but it's not necessary.
+	*/
+
 	vec2 c00 = floor(point);
 	vec2 c10 = c00 + vec2(1., 0.);
 	vec2 c01 = c00 + vec2(0.,1.);
@@ -77,9 +85,42 @@ vec3 tex_perlin(vec2 point) {
 	return vec3(noise_val);
 }
 
-//We project each point into a 2d plan  which is defined by the axis x and y 
-//Then we scale it by the norm of the z component so no two 3D vectors are mapped to
-//the same 2D vector
-vec2 vec3_to_vec2(vec3 point){
-    return point.z * point.xy;
+
+// for marble
+const float freq_multiplier = 2.17;
+const float ampl_multiplier = 0.5;
+const int num_octaves = 4;
+
+float perlin_fbm(vec2 point) {
+	/* TODO 4.2
+	Implement 2D fBm as described in the handout. Like in the 1D case, you
+	should use the constants num_octaves, freq_multiplier, and ampl_multiplier. 
+	*/
+	float acc = 0.;
+	for (int i = 0; i < num_octaves; i++) {
+		acc += pow(ampl_multiplier, float(i)) * perlin_noise(point * pow(freq_multiplier, float(i)));
+	}
+
+	return acc;
+}
+
+const vec3 brown_dark 	= vec3(0.48, 0.29, 0.00);
+const vec3 brown_light 	= vec3(0.90, 0.82, 0.62);
+const vec3 white = vec3(0.95, 0.95, 0.95);
+
+
+vec3 tex_marble(vec2 point) {
+	/* TODO 5.1.3
+	Implement your marble texture evaluation routine as described in the handout.
+	You will need to use your 2d fbm routine and the marble color constants described above.
+	*/
+	vec2 q = vec2(perlin_fbm(point),perlin_fbm(point+vec2(1.7,4.6)));
+	float alpha = (1. + perlin_fbm(point+4.*q)) / 2.;
+
+	return (alpha * white + (1. - alpha) * brown_dark);
+}
+
+void main() {
+	gl_FragColor = vec4(ambient_intensity*tex_marble(v2f_position.xy), 1.);
+	//gl_FragColor = vec4(tex_perlin(v2f_position.xy)*light_color * v2f_color * ambient_intensity,1.);
 }

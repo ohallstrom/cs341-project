@@ -93,6 +93,59 @@ export function init_light(regl, resources) {
 
 		cull: {enable: false},
 	});
+
+	const phong_perlin_lighting_pipeline = regl({
+		attributes: {
+			position:       regl.prop('mesh.vertex_positions'),
+			normal:         regl.prop('mesh.vertex_normals'),
+			diffuse_color:  regl.prop('mesh.vertex_color'),
+			specular_color: regl.prop('mesh.vertex_color'),
+		},
+		// Faces, as triplets of vertex indices
+		elements: regl.prop('mesh.faces'),
+
+		// Uniforms: global data available to the shader
+		uniforms: {
+			mat_mvp:        regl.prop('mat_mvp'),
+			mat_model:      regl.prop('mat_model'),
+			mat_model_view: regl.prop('mat_model_view'),
+			mat_normals:    regl.prop('mat_normals'),
+
+			light_position:  regl.prop('light_position'),
+			light_color:     regl.prop('light_color'),
+			shadow_cubemap:  shadow_cubemap,
+
+			shininess: 0.8,
+		},
+
+		vert: resources.shader_perlin_phong_shadow_vert,
+		frag: resources.shader_perlin_phong_shadow_frag,
+
+		// The depth buffer needs to be filled before calling this pipeline,
+		// otherwise our additive blending mode can accumulate contributions
+		// from fragments that should be invisible.
+		// (The depth buffer is filled by the ambient pass.)
+
+		/* Todo 6.2.3
+		    change the blend options
+		*/
+		blend: {
+            enable: true,
+            func: {
+                src: 1,
+                dst: 1,
+            },
+        },
+
+		depth: {
+			enable: true,
+			mask: true,
+			func: '<=',
+		},
+
+		cull: {enable: false},
+	});
+
 	const cell_lighting_pipeline = regl({
 		attributes: {
 			position:       regl.prop('mesh.vertex_positions'),
@@ -119,6 +172,58 @@ export function init_light(regl, resources) {
 
 		vert: resources.shader_cell_shadow_vert,
 		frag: resources.shader_cell_shadow_frag,
+
+		// The depth buffer needs to be filled before calling this pipeline,
+		// otherwise our additive blending mode can accumulate contributions
+		// from fragments that should be invisible.
+		// (The depth buffer is filled by the ambient pass.)
+
+		/* Todo 6.2.3
+		    change the blend options
+		*/
+		blend: {
+            enable: true,
+            func: {
+                src: 1,
+                dst: 1,
+            },
+        },
+
+		depth: {
+			enable: true,
+			mask: true,
+			func: '<=',
+		},
+
+		cull: {enable: false},
+	});
+
+	const cell_perlin_lighting_pipeline = regl({
+		attributes: {
+			position:       regl.prop('mesh.vertex_positions'),
+			normal:         regl.prop('mesh.vertex_normals'),
+			diffuse_color:  regl.prop('mesh.vertex_color'),
+			specular_color: regl.prop('mesh.vertex_color'),
+		},
+		// Faces, as triplets of vertex indices
+		elements: regl.prop('mesh.faces'),
+
+		// Uniforms: global data available to the shader
+		uniforms: {
+			mat_mvp:        regl.prop('mat_mvp'),
+			mat_model:      regl.prop('mat_model'),
+			mat_model_view: regl.prop('mat_model_view'),
+			mat_normals:    regl.prop('mat_normals'),
+
+			light_position:  regl.prop('light_position'),
+			light_color:     regl.prop('light_color'),
+			shadow_cubemap:  shadow_cubemap,
+
+			shininess: 0.8,
+		},
+
+		vert: resources.shader_perlin_cell_shadow_vert,
+		frag: resources.shader_perlin_cell_shadow_frag,
 
 		// The depth buffer needs to be filled before calling this pipeline,
 		// otherwise our additive blending mode can accumulate contributions
@@ -332,6 +437,40 @@ export function init_light(regl, resources) {
 				cell_lighting_pipeline(batch_draw_calls);
 			} else {
 				phong_lighting_pipeline(batch_draw_calls);
+			}
+			
+		}
+
+		draw_perlin_phong_contribution({actors, mat_view, mat_projection, cell_is_used}) {
+			const light_position_cam = vec3FromVec4(vec4.transformMat4(vec4.create(), vec4FromVec3(this.position, 1.0), mat_view));
+
+			const batch_draw_calls = actors.map((actor) => {
+				const mat_mvp        = mat4.create();
+				const mat_model_view = mat4.create();
+				const mat_normals    = mat3.create();
+
+				mat4_matmul_many(mat_model_view, mat_view, actor.mat_model);
+				mat4_matmul_many(mat_mvp, mat_projection, mat_model_view);
+
+				mat3.fromMat4 (mat_normals, mat_model_view);
+				mat3.transpose(mat_normals, mat_normals);
+				mat3.invert   (mat_normals, mat_normals);
+
+				return {
+					mesh:           actor.mesh,
+					mat_mvp:        mat_mvp,
+					mat_model:      actor.mat_model,
+					mat_model_view: mat_model_view,
+					mat_normals:    mat_normals,
+
+					light_position:  light_position_cam,
+					light_color:     vec3.scale(vec3.create(), this.color, this.intensity),
+				}
+			});
+			if (cell_is_used) {
+				cell_perlin_lighting_pipeline(batch_draw_calls);
+			} else {
+				phong_perlin_lighting_pipeline(batch_draw_calls);
 			}
 			
 		}
