@@ -6,7 +6,10 @@ varying vec3 v2f_position;
 uniform vec3 light_color;
 
 
-const float ambient_intensity = 0.15;
+const float ambient_intensity = 0.5;
+const float threshold = 0.85;
+const float threshold_gaussian = 0.7727;
+const float dv = 0.0007;
 
 #define NUM_GRADIENTS 12
 
@@ -44,10 +47,6 @@ float blending_weight_poly(float t) {
 }
 
 float perlin_noise(vec2 point) {
-	/* TODO 4.1
-	Implement 2D perlin noise as described in the handout.
-	You may find a glsl `for` loop useful here, but it's not necessary.
-	*/
 
 	vec2 c00 = floor(point);
 	vec2 c10 = c00 + vec2(1., 0.);
@@ -78,24 +77,12 @@ float perlin_noise(vec2 point) {
 	return mix(st, uv, fy);
 }
 
-vec3 tex_perlin(vec2 point) {
-	// Visualize noise as a vec3 color
-	float freq = 23.15;
- 	float noise_val = perlin_noise(point * freq) + 0.5;
-	return vec3(noise_val);
-}
-
-
 // for marble
 const float freq_multiplier = 2.17;
 const float ampl_multiplier = 0.5;
 const int num_octaves = 4;
 
 float perlin_fbm(vec2 point) {
-	/* TODO 4.2
-	Implement 2D fBm as described in the handout. Like in the 1D case, you
-	should use the constants num_octaves, freq_multiplier, and ampl_multiplier. 
-	*/
 	float acc = 0.;
 	for (int i = 0; i < num_octaves; i++) {
 		acc += pow(ampl_multiplier, float(i)) * perlin_noise(point * pow(freq_multiplier, float(i)));
@@ -110,17 +97,40 @@ const vec3 white = vec3(0.95, 0.95, 0.95);
 
 
 vec3 tex_marble(vec2 point) {
-	/* TODO 5.1.3
-	Implement your marble texture evaluation routine as described in the handout.
-	You will need to use your 2d fbm routine and the marble color constants described above.
-	*/
 	vec2 q = vec2(perlin_fbm(point),perlin_fbm(point+vec2(1.7,4.6)));
 	float alpha = (1. + perlin_fbm(point+4.*q)) / 2.;
 
 	return (alpha * white + (1. - alpha) * brown_dark);
 }
 
+vec3 gaussian_marble(vec2 point){
+	vec3 acc = vec3(0.);
+	for (highp float x = 0.; x < 5.; x+=1.) {
+		for (highp float y = 0.; y < 5.; y+=1.) {
+			vec3 color = tex_marble(vec2(point.x+(x-2.)*dv,point.y+(y-2.)*dv));
+			if (dot(color, vec3(0.2126, 0.7152, 0.0722)) > 0.8){
+				if (x == 3. && y == 3.){
+					acc += color;
+				}
+				acc += color;	
+			}
+		}
+	}
+	//vec3 r_acc = acc*0.07142857;
+	vec3 r_acc = acc*0.038;
+
+	//vec3 r_acc = acc*0.03846154;
+	return r_acc;
+}
+
 void main() {
-	gl_FragColor = vec4(ambient_intensity*tex_marble(v2f_position.xy), 1.);
-	//gl_FragColor = vec4(tex_perlin(v2f_position.xy)*light_color * v2f_color * ambient_intensity,1.);
+	vec3 color = ambient_intensity*tex_marble(v2f_position.xy);
+	// float brightness = dot(color, vec3(0.2126, 0.7152, 0.0722));
+	// if (brightness > 0.7){
+	// 	gl_FragColor = vec4(ambient_intensity*gaussian_marble(v2f_position.xy), 1.)*0.1 + vec4(color,1.)*1.;
+	// } else {
+	// 	gl_FragColor = vec4(color,1.);
+	// }
+	gl_FragColor = vec4(color,1.);
+
 }
