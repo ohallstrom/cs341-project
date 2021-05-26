@@ -6,10 +6,10 @@ varying vec3 v2f_position;
 uniform vec3 light_color;
 
 
-const float ambient_intensity = 0.15;
+const float ambient_intensity = 0.5;
 const float threshold = 0.85;
-const float threshold_gaussian = 0.7727;
-const float dv = 0.0007;
+const float threshold_gaussian = 0.83;
+const float dv = 0.005;
 
 #define NUM_GRADIENTS 12
 
@@ -91,16 +91,15 @@ float perlin_fbm(vec2 point) {
 	return acc;
 }
 
-const vec3 brown_dark 	= vec3(0.48, 0.29, 0.00);
-const vec3 brown_light 	= vec3(0.90, 0.82, 0.62);
-const vec3 white = vec3(0.95, 0.95, 0.95);
+const vec3 light 	= vec3(0.95, 0.5, 0.0);
+const vec3 white = vec3(1., 0.99, 0.99);
 
 
 vec3 tex_marble(vec2 point) {
-	vec2 q = vec2(perlin_fbm(point),perlin_fbm(point+vec2(1.7,4.6)));
+	vec2 q = vec2(perlin_fbm(point),perlin_fbm(point+vec2(2.8,4.6)));
 	float alpha = (1. + perlin_fbm(point+4.*q)) / 2.;
 
-	return (alpha * white + (1. - alpha) * brown_dark);
+	return (alpha * white + (1. - alpha) * light);
 }
 
 vec3 gaussian_marble(vec2 point){
@@ -108,7 +107,7 @@ vec3 gaussian_marble(vec2 point){
 	for (highp float x = 0.; x < 5.; x+=1.) {
 		for (highp float y = 0.; y < 5.; y+=1.) {
 			vec3 color = tex_marble(vec2(point.x+(x-2.)*dv,point.y+(y-2.)*dv));
-			if (dot(color, vec3(0.2126, 0.7152, 0.0722)) > 0.8){
+			if (dot(color, vec3(0.2126, 0.7152, 0.0722)) > threshold_gaussian){
 				if (x == 3. && y == 3.){
 					acc += color;
 				}
@@ -125,12 +124,12 @@ vec3 gaussian_marble(vec2 point){
 
 void main() {
 	vec3 color = ambient_intensity*tex_marble(v2f_position.xy);
-	// float brightness = dot(color, vec3(0.2126, 0.7152, 0.0722));
-	// if (brightness > 0.7){
-	// 	gl_FragColor = vec4(ambient_intensity*gaussian_marble(v2f_position.xy), 1.)*0.1 + vec4(color,1.)*1.;
-	// } else {
-	// 	gl_FragColor = vec4(color,1.);
-	// }
-	gl_FragColor = vec4(color,1.);
+	float brightness = dot(color, vec3(0.2126, 0.7152, 0.0722));
+	if (brightness > 0.36){ //this threshold is used to minimize gauss calculations
+		gl_FragColor = vec4(ambient_intensity*gaussian_marble(v2f_position.xy), 1.)*0.5 + vec4(color,1.)*1.;
+	} else {
+		gl_FragColor = vec4(color,1.);
+	}
+	//gl_FragColor = vec4(color,1.);
 
 }

@@ -58,6 +58,8 @@ async function main() {
 		'shader_perlin_vert':      load_text('./src/shaders/ambient_perlin.vert.glsl'),
 		'shader_perlin_frag':      load_text('./src/shaders/ambient_perlin.frag.glsl'),
 
+		'shader_bloom_vert':      load_text('./src/shaders/ambient_bloom.vert.glsl'),
+		'shader_bloom_frag':      load_text('./src/shaders/ambient_bloom.frag.glsl'),
 
 		'shader_phong_shadow_vert': load_text('./src/shaders/phong_shadow.vert.glsl'),
 		'shader_phong_shadow_frag': load_text('./src/shaders/phong_shadow.frag.glsl'),
@@ -86,8 +88,8 @@ async function main() {
 			planet: [0.2, 1., 0.2],
 
 		}),
-		'mesh_sun': mesh_load_obj(regl, './meshes/sun.obj', {
-			sun: [0.9, 0.9, 0.1],
+		'mesh_sun': mesh_load_obj(regl, './meshes/sphere.obj', {
+			blase: [0.9, 0.9, 0.1],
 		}),
 		'mesh_rocket': mesh_load_obj(regl, './meshes/rocket.obj', {
 			Material: [1.,0.2,0.],
@@ -190,7 +192,7 @@ async function main() {
 		Actors
 	---------------------------------------------------------------*/
 
-	const {actors, perlin_actors, update_simulation, render_ambient, render_perlin} = init_scene(regl, resources);
+	const {actors, perlin_actors, bloom_actors, update_simulation, render_ambient, render_perlin, render_bloom} = init_scene(regl, resources);
 
 	const Light = init_light(regl, resources);
 
@@ -233,6 +235,11 @@ async function main() {
 	let is_paused = false;
 	register_button_with_hotkey('btn-pause', 'p', () => {
 		is_paused = !is_paused
+	})
+
+	let bloom = false;
+	register_button_with_hotkey('btn-bloom', 'b', () => {
+		bloom = !bloom
 	})
 
 	let cell_is_used = false;
@@ -320,6 +327,8 @@ async function main() {
 		
 		update_simulation({sim_time: sim_time, actors: actors});
 		update_simulation({sim_time: sim_time, actors: perlin_actors});
+		update_simulation({sim_time: sim_time, actors: bloom_actors});
+
 
 		const light_to_visulaize = lights[lights.length - 1];
 		const scene_info = {
@@ -342,14 +351,29 @@ async function main() {
 			cell_is_used: 	 cell_is_used,
 		}
 
+		const bloom_info = {
+			sim_time:        sim_time,
+			mat_view:        active_mat_view, // can differ from mat_view for debugging!
+			scene_mat_view:  mat_view,
+			mat_projection:  active_mat_projection, // can differ from mat_projection for debugging!
+			actors:          bloom_actors,
+			ambient_light_color: vec3.fromValues(0.4, 0.4, 0.4),
+			cell_is_used: 	 cell_is_used,
+		}
+
 		regl.clear({color: [0.0, 0.0, 0.0, 1]});
 
 		render_ambient(scene_info);
 		render_perlin(perlin_info);
+		if (bloom) {
+			render_bloom(bloom_info);
+		} else {
+			render_ambient(bloom_info);
+		}
 
 		for (const light of lights) {
 			light.render_shadowmap(scene_info)
-			light.render_shadowmap(perlin_info)
+			light.render_shadowmap(perlin_info)			
 
 
 			light.draw_phong_contribution(scene_info);
