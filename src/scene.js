@@ -72,9 +72,13 @@ export function init_scene(regl, resources) {
 				actor.animation_tick(actor, scene_info);
 			}
 		});
-		
 	}
-	
+	function update_car_speed(scene_info){
+		scene_info.actors.forEach(actor => {
+			actor.car_speed = scene_info.car_speed;
+		});
+	}
+
 	function render_ambient({actors, mat_view, mat_projection, ambient_light_color}) {
 		const batch_draw_calls = actors.map((actor) => {
 			const mat_model      = actor.mat_model;
@@ -132,17 +136,7 @@ export function init_scene(regl, resources) {
 	};
 
 	const scene_actors = [
-		{ //car
-			mesh: resources.mesh_car,
-			mat_model: mat4.create(),
-			animation_tick: (actor, {sim_time}) => {
-				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
-		 		//actor.mat_model = translation
-				const rotation = mat4.fromXRotation(actor.mat_model, sim_time *car_speed);
-				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation);
-				//mat4_matmul_many(actor.mat_model, rotation);			
-			},
-		},
+
 		{ //rocket
 			mesh: resources.mesh_rocket,
 			mat_model: mat4.create(),
@@ -160,6 +154,19 @@ export function init_scene(regl, resources) {
 		},
 		
 	];
+
+	const car_actors = [
+		{//car
+			mesh: resources.mesh_car,
+			mat_model: mat4.create(),
+			car_speed: 0.5,
+			animation_tick: (actor, {sim_time})=> {
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
+				const rotation = mat4.fromXRotation(actor.mat_model, sim_time *actor.car_speed);
+				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation);		
+			},
+		},
+	]
 
 	const perlin_actors = [
 		{ //planet
@@ -189,7 +196,9 @@ export function init_scene(regl, resources) {
 		actors: scene_actors,
 		perlin_actors: perlin_actors,
 		bloom_actors: bloom_actors,
+		car_actors: car_actors,
 		update_simulation,
+		update_car_speed,
 		render_ambient,
 		render_perlin,
 		render_bloom,

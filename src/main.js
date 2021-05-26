@@ -192,7 +192,9 @@ async function main() {
 		Actors
 	---------------------------------------------------------------*/
 
-	const {actors, perlin_actors, bloom_actors, update_simulation, render_ambient, render_perlin, render_bloom} = init_scene(regl, resources);
+	const {actors, perlin_actors, bloom_actors, car_actors, update_simulation, update_car_speed, render_ambient, render_perlin, render_bloom} = init_scene(regl, resources);
+
+	let speed = car_actors[0].car_speed;
 
 	const Light = init_light(regl, resources);
 
@@ -212,20 +214,19 @@ async function main() {
 	//head lights:
 	const headl_R = new Light({
 			update: (light, {sim_time}) => {
-				light.position = [-0.75,12.95* -(Math.sin((sim_time+0.3)*0.5)),( 12.95* Math.cos((sim_time+0.3)*0.5))];
+				light.position = [-0.75,12.95* -(Math.sin((sim_time+0.15/speed)*speed)),( 12.95* Math.cos((sim_time+0.15/speed)*speed))];
 			},
 			color: [1., 0.9, 0.2],
 			intensity: 0.65,
 		});
 	const headl_L = new Light({
 			update: (light, {sim_time}) => {
-				light.position = [0.75,12.95* -(Math.sin((sim_time+0.3)*0.5)),( 12.95* Math.cos((sim_time+0.3)*0.5))];
+				light.position = [0.75,12.95* -(Math.sin((sim_time+0.15/speed)*speed)),( 12.95* Math.cos((sim_time+0.15/speed)*speed))];
 			},
 			color: [1., 0.9, 0.2],
 			intensity: 0.65,
 		});
 	
-		
 	/*
 		UI
 	*/
@@ -263,18 +264,18 @@ async function main() {
 		}
 	})
 
+	
+	register_keyboard_action('u', () => {
+		if (speed < 1.){
+			speed += 0.1;
+		}
+	})
 
-	// register_keyboard_action('u', () => {
-	// 	if (speed < 1.){
-	// 		speed += 0.1;
-	// 	}
-	// })
-
-	// register_keyboard_action('d', () => {
-	// 	if (speed > 0.){
-	// 		speed -= 0.1;
-	// 	}
-	// })
+	register_keyboard_action('d', () => {
+		if (speed > 0.){
+			speed -= 0.1;
+		}
+	})
 
 	function activate_preset_view() {
 		is_paused = true;
@@ -287,13 +288,6 @@ async function main() {
 	}
 	register_button_with_hotkey('btn-preset-view', 'c', activate_preset_view)
 
-
-	//Put the camera in front of the 
-	function cam_from_front(){
-
-
-	}
-	
 
 	/*---------------------------------------------------------------
 		Frame render
@@ -328,7 +322,12 @@ async function main() {
 		update_simulation({sim_time: sim_time, actors: actors});
 		update_simulation({sim_time: sim_time, actors: perlin_actors});
 		update_simulation({sim_time: sim_time, actors: bloom_actors});
+		
 
+		update_car_speed(({car_speed: speed, actors: car_actors}));
+		update_simulation({sim_time: sim_time, actors: car_actors});
+
+		const actors_with_car = actors.concat(car_actors);
 
 		const light_to_visulaize = lights[lights.length - 1];
 		const scene_info = {
@@ -336,7 +335,7 @@ async function main() {
 			mat_view:        active_mat_view, // can differ from mat_view for debugging!
 			scene_mat_view:  mat_view,
 			mat_projection:  active_mat_projection, // can differ from mat_projection for debugging!
-			actors:          actors,
+			actors:          actors_with_car,
 			ambient_light_color: vec3.fromValues(0.4, 0.4, 0.4),
 			cell_is_used: 	 cell_is_used,
 		}
@@ -360,11 +359,12 @@ async function main() {
 			ambient_light_color: vec3.fromValues(0.4, 0.4, 0.4),
 			cell_is_used: 	 cell_is_used,
 		}
-
+		
 		regl.clear({color: [0.0, 0.0, 0.0, 1]});
 
 		render_ambient(scene_info);
 		render_perlin(perlin_info);
+
 		if (bloom) {
 			render_bloom(bloom_info);
 		} else {
@@ -373,8 +373,7 @@ async function main() {
 
 		for (const light of lights) {
 			light.render_shadowmap(scene_info)
-			light.render_shadowmap(perlin_info)			
-
+			light.render_shadowmap(perlin_info)		
 
 			light.draw_phong_contribution(scene_info);
 			light.draw_perlin_phong_contribution(perlin_info);
