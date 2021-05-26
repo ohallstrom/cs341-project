@@ -138,21 +138,18 @@ async function main() {
 
 		* cam_target - the point we orbit around
 		*/
-		
-		// Example camera matrix, looking along forward-X, edit this
 		const dist = cam_distance_base * cam_distance_factor;
-		const look_at = mat4.lookAt(mat4.create(),
-			[dist, 0, 0], // camera position in world coord
+		let look_at = mat4.lookAt(mat4.create(),
+		[dist, 0, 0], // camera position in world coord
 			cam_target, // view target point
 			[0, 0, 1], // up vector
 		);
-		// Store the combined transform in mat_world_to_cam
 		// mat_world_to_cam = A * B * ...
 		//Adding 180 degrees offset as proposed by teaching assistant.
 		const M_rotatZ = mat4.fromZRotation(mat4.create(), cam_angle_z + Math.PI);
 		const M_rotatY = mat4.fromYRotation(mat4.create(), - cam_angle_y );
 
-		mat4_matmul_many(mat_world_to_cam, look_at, M_rotatY, M_rotatZ);
+			mat4_matmul_many(mat_world_to_cam, look_at, M_rotatY, M_rotatZ);
 	}
 
 	update_cam_transform();
@@ -194,7 +191,8 @@ async function main() {
 
 	const {actors, perlin_actors, bloom_actors, car_actors, update_simulation, update_car_speed, render_ambient, render_perlin, render_bloom} = init_scene(regl, resources);
 
-	let speed = car_actors[0].car_speed;
+	let car = car_actors[0];
+	let speed = car.car_speed;
 
 	const Light = init_light(regl, resources);
 
@@ -211,21 +209,42 @@ async function main() {
 	];
 
 
-	//head lights:
+	/* Adding an offset and changing the rayon.
+	* We want to add the sin and cos offset regarding the car position
+	*sin(a + b) = sin(a)cos(b) + cos(a)sin(b)
+	*cos(a + b) = cos(a)cos(b) - sin(a)sin(b)
+	* And our car rotation is defined by the rotation around the x-axis which is:
+	* [0., -r*sin(a), r*cos(a)]
+	*/
+	//we already have r*sin(a) and r*cos(a) from the actor position
+	function offset_plus_scale(r, offset){
+		let sin_a = -car.car_pos[1];
+		let cos_a = car.car_pos[2];
+		//We calculate for the offset :
+		let sin_b = Math.sin(offset);
+		let cos_b = Math.cos(offset);
+		//And we apply the formula
+		let y = -r*(sin_a*cos_b + cos_a*sin_b);
+		let z = r*(cos_a*cos_b - sin_a*sin_b);
+		return  [y,z];
+	}
 	const headl_R = new Light({
-			update: (light, {sim_time}) => {
-				light.position = [-0.75,12.95* -(Math.sin((sim_time+0.15/speed)*speed)),( 12.95* Math.cos((sim_time+0.15/speed)*speed))];
-			},
-			color: [1., 0.9, 0.2],
-			intensity: 0.65,
-		});
+		update: (light, {sim_time}) => {
+			let [y,z] = offset_plus_scale(1.1, 0.25);
+			light.position = [-0.75, y, z];
+		},
+		color: [1., 0.9, 0.2],
+		intensity: 0.65,
+	});
 	const headl_L = new Light({
-			update: (light, {sim_time}) => {
-				light.position = [0.75,12.95* -(Math.sin((sim_time+0.15/speed)*speed)),( 12.95* Math.cos((sim_time+0.15/speed)*speed))];
-			},
-			color: [1., 0.9, 0.2],
-			intensity: 0.65,
-		});
+		update: (light, {sim_time}) => {
+			let [y,z] = offset_plus_scale(1.1, 0.25);
+			light.position = [0.75, y, z];
+		},
+		color: [1., 0.9, 0.2],
+		intensity: 0.65,
+});
+
 	
 	/*
 		UI
@@ -265,17 +284,36 @@ async function main() {
 	})
 
 	
+	let back_view = false;
+	register_keyboard_action('x', ()=>{
+		front_view = false;
+		back_view = !back_view;
+		update_cam_transform();
+	})
+
+	let front_view = false;
+	register_keyboard_action('f', ()=>{
+		back_view = false;
+		front_view = !front_view;
+		update_cam_transform();
+	})
+
+	let change_speed = false;
 	register_keyboard_action('u', () => {
 		if (speed < 1.){
 			speed += 0.1;
+			change_speed =true;
 		}
 	})
 
 	register_keyboard_action('d', () => {
 		if (speed > 0.){
 			speed -= 0.1;
+			change_speed=true;
 		}
 	})
+
+	
 
 	function activate_preset_view() {
 		is_paused = true;
@@ -303,12 +341,38 @@ async function main() {
 		}
 		prev_regl_time = frame.time;
 
+
 		mat4.perspective(mat_projection,
 			deg_to_rad * 60, // fov y
 			frame.framebufferWidth / frame.framebufferHeight, // aspect ratio
 			0.01, // near
 			100, // far
 		)
+		if (front_view){
+			const [cam_y,cam_z] = offset_plus_scale(1.15,0.05);
+			const [target_y, target_z] = offset_plus_scale(0.95, 0.35);
+
+			const up = vec3.normalize(vec3.create(),car.car_pos);
+			const look_at = mat4.lookAt(
+				mat4.create(),
+				[0., cam_y, cam_z],
+				[0., target_y, target_z],
+				up
+			)
+			mat4.copy(mat_world_to_cam, look_at);
+		}else if (back_view){
+			const [cam_y,cam_z] = offset_plus_scale(1.35,-0.15);
+			const [target_y, target_z] = offset_plus_scale(0.95, 0.35);
+
+			const up = vec3.normalize(vec3.create(),car.car_pos);
+			const look_at = mat4.lookAt(
+				mat4.create(),
+				[0., cam_y, cam_z],
+				[0., target_y, target_z],
+				up
+			)
+			mat4.copy(mat_world_to_cam, look_at);
+		}
 
 		mat4.copy(mat_view, mat_world_to_cam);
 
@@ -318,7 +382,7 @@ async function main() {
 		for (const light of lights) {
 			light.update_simulation({sim_time: sim_time});
 		}
-		
+
 		update_simulation({sim_time: sim_time, actors: actors});
 		update_simulation({sim_time: sim_time, actors: perlin_actors});
 		update_simulation({sim_time: sim_time, actors: bloom_actors});
