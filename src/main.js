@@ -255,18 +255,17 @@ async function main() {
 			lights.pop();
 		}
 	})
-	// let speed = get_car_speed();
+
+
 	// register_keyboard_action('u', () => {
 	// 	if (speed < 1.){
 	// 		speed += 0.1;
-	// 		set_car_speed(speed);
 	// 	}
 	// })
 
 	// register_keyboard_action('d', () => {
 	// 	if (speed > 0.){
 	// 		speed -= 0.1;
-	// 		set_car_speed(speed);
 	// 	}
 	// })
 
@@ -281,9 +280,18 @@ async function main() {
 	}
 	register_button_with_hotkey('btn-preset-view', 'c', activate_preset_view)
 
+
+	//Put the camera in front of the 
+	function cam_from_front(){
+
+
+	}
+	
+
 	/*---------------------------------------------------------------
 		Frame render
 	---------------------------------------------------------------*/
+
 	const mat_projection = mat4.create();
 	const mat_view = mat4.create();
 
@@ -312,7 +320,6 @@ async function main() {
 		
 		update_simulation({sim_time: sim_time, actors: actors});
 		update_simulation({sim_time: sim_time, actors: perlin_actors});
-
 
 		const light_to_visulaize = lights[lights.length - 1];
 		const scene_info = {
@@ -349,26 +356,6 @@ async function main() {
 			light.draw_perlin_phong_contribution(perlin_info);
 
 		}
-		
-		// if (light_on){
-		// 	// const headl = new Light({
-		// 	// 	position: [0.,0.,-20.],
-		// 	// 	color: [1.,0.5,0.5],
-		// 	// 	intensity: 20.,
-		// 	// })
-		// 	const headlights = new Light({
-		// 		update: (light, {sim_time}) => {
-		// 			light.position = [0., -13., 13.]
-		// 		},
-		// 		color: [1., 1., 1.],
-		// 		intensity: 200.,
-		// 	})
-		// 	// headl.render_shadowmap(scene_info);
-		// 	// headl.draw_phong_contribution(scene_info);
-		// 	headlights.render_shadowmap(scene_info);
-		// 	headlights.draw_phong_contribution(scene_info);
-		// }
-
 
 
 // 		debug_text.textContent = `

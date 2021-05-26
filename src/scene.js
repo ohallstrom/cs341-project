@@ -3,7 +3,6 @@ import {mat4_to_string, vec_to_string, mat4_matmul_many} from "./icg_math.js"
 
 //DECLARATION OF CONSTANTS
 const RADIUS_PLANET = 12.;
-
 var car_speed = 0.5;
 export function init_scene(regl, resources) {
 
@@ -53,6 +52,7 @@ export function init_scene(regl, resources) {
 				actor.animation_tick(actor, scene_info);
 			}
 		});
+		
 	}
 	
 	function render_ambient({actors, mat_view, mat_projection, ambient_light_color}) {
