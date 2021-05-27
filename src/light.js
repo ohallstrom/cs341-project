@@ -250,54 +250,6 @@ export function init_light(regl, resources) {
 		cull: {enable: false},
 	});
 
-	const flattened_cubemap_pipeline = regl({
-		attributes: {
-			position: [
-				[0., 0.],
-				[3., 0.],
-				[3., 2.],
-				[0., 2.],
-			],
-		},
-		elements: [
-			[0, 1, 2], // top right
-			[0, 2, 3], // bottom left
-		],
-		uniforms: {
-			cubemap_to_show: shadow_cubemap,
-			cubemap_annotation: annotation_cubemap,
-			preview_rect_scale: ({viewportWidth, viewportHeight}) => {
-				const aspect_ratio = viewportWidth / viewportHeight;
-
-				const width_in_viewport_units = 0.8;
-				const heigh_in_viewport_units = 0.4 * aspect_ratio;
-
-				return [
-					width_in_viewport_units / 3.,
-					heigh_in_viewport_units / 2.,
-				];
-			},
-		},
-		vert: resources.shader_vis_vert,
-		frag: resources.shader_vis_frag,
-	});
-
-	const mesh_cube = icg_mesh_make_cube();
-	const cube_pipeline = regl({
-		attributes: {
-			position: mesh_cube.vertex_positions,
-		},
-		elements: mesh_cube.faces,
-		uniforms: {
-			light_distance_cubemap: shadow_cubemap,
-			annotation_cubemap: annotation_cubemap,
-			mat_mvp:        regl.prop('mat_mvp'),
-			mat_model_view: regl.prop('mat_model_view'),
-		},
-		vert: resources.shader_viscube_vert,
-		frag: resources.shader_viscube_frag,
-		cull: {enable: false},
-	});
 
 	/*
 	TODO 6.1.1 cube_camera_projection:
@@ -310,11 +262,6 @@ export function init_light(regl, resources) {
 	//is it shadow_cubemap?
 	//is the ratio correct?
 	//distance along z axis = light_distance_cubemap ?
-	console.log(shadow_cubemap.aspect_ratio)
-	console.log(flattened_cubemap_pipeline.aspect_ratio)
-	console.log(mesh_cube.faces)
-	console.log(shadow_cubemap.faces)
-	console.log(cube_pipeline.heigh_in_viewport_units)
 	const cube_camera_projection = mat4.perspective(mat4.create(), Math.atan(1) * 2, 1, 0.1, 100); 
 
 	class Light {
@@ -475,9 +422,6 @@ export function init_light(regl, resources) {
 			
 		}
 
-		// visualize_distance_map() {
-		// 	flattened_cubemap_pipeline();
-		// }
 
 		// // Note: mat_view can differ from scene_mat_view, e.g. when viewing from cube_camera_view
 		visualize_cube({mat_view, scene_mat_view, mat_projection}) {

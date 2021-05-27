@@ -49,9 +49,7 @@ async function main() {
 	const resources = {
 		'shader_shadowmap_gen_vert': load_text('./src/shaders/shadowmap_gen.vert.glsl'),
 		'shader_shadowmap_gen_frag': load_text('./src/shaders/shadowmap_gen.frag.glsl'),
-		'shader_vis_vert': load_text('./src/shaders/cubemap_visualization.vert.glsl'),
-		'shader_vis_frag': load_text('./src/shaders/cubemap_visualization.frag.glsl'),
-
+		
 		'shader_ambient_vert':      load_text('./src/shaders/ambient_color.vert.glsl'),
 		'shader_ambient_frag':      load_text('./src/shaders/ambient_color.frag.glsl'),
 
