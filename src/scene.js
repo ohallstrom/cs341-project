@@ -3,7 +3,6 @@ import {mat4_to_string, vec_to_string, mat4_matmul_many, vec3FromVec4} from "./i
 
 //DECLARATION OF CONSTANTS
 const RADIUS_PLANET = 12.;
-var car_speed = 0.5;
 export function init_scene(regl, resources) {
 
 	const ambient_pass_pipeline = regl({
