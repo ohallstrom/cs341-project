@@ -188,7 +188,7 @@ async function main() {
 		Actors
 	---------------------------------------------------------------*/
 
-	const {actors, perlin_actors, bloom_actors, car_actors, update_simulation, update_car_speed, render_ambient, render_perlin, render_bloom} = init_scene(regl, resources);
+	const {actors, perlin_actors, bloom_actors, car_actors, update_simulation, update_car_speed, update_car_angle, render_ambient, render_perlin, render_bloom} = init_scene(regl, resources);
 
 	const car = car_actors[0];
 	var speed = car.car_speed;
@@ -246,7 +246,7 @@ async function main() {
 	});
 	const headl_L = new Light({
 		update: (light, {sim_time}) => {
-			let [y,z] = offset_plus_scale(1.1,sin_headl, cos_headl);
+			let [y,z] = offset_plus_scale(1.1, sin_headl, cos_headl);
 			light.position = [0.75, y, z];
 		},
 		color: [1., 0.9, 0.2],
@@ -308,12 +308,14 @@ async function main() {
 	register_keyboard_action('u', () => {
 		if (speed < 1.){
 			speed += 0.1;
+			update_car_angle({sim_time: sim_time, actors: car_actors});
 		}
 	})
 
 	register_keyboard_action('d', () => {
 		if (speed > 0.){
 			speed -= 0.1;
+			update_car_angle({sim_time: sim_time, actors: car_actors});
 		}
 	})
 

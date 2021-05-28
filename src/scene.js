@@ -72,6 +72,12 @@ export function init_scene(regl, resources) {
 			}
 		});
 	}
+	function update_car_angle(scene_info){
+		scene_info.actors.forEach(actor =>{
+			actor.old_angle += actor.car_angle;
+			actor.time_changement_speed = scene_info.sim_time;
+		})
+	}
 	function update_car_speed(scene_info){
 		scene_info.actors.forEach(actor => {
 			actor.car_speed = scene_info.car_speed;
@@ -135,7 +141,6 @@ export function init_scene(regl, resources) {
 	};
 
 	const scene_actors = [
-
 		{ //rocket
 			mesh: resources.mesh_rocket,
 			mat_model: mat4.create(),
@@ -159,11 +164,15 @@ export function init_scene(regl, resources) {
 			mat_model: mat4.create(),
 			car_speed: 0.5,
 			car_pos: vec3.fromValues(0., 0.,0.),
+			car_angle: 0.,
+			old_angle: 0.,
+			time_changement_speed: 0.,
 			animation_tick: (actor, {sim_time})=> {
+				actor.car_angle = (sim_time-actor.time_changement_speed) * actor.car_speed;
 				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
-				const rotation = mat4.fromXRotation(actor.mat_model, sim_time*actor.car_speed);
+				const rotation = mat4.fromXRotation(actor.mat_model,actor.old_angle + actor.car_angle);
 				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation);	
-				vec3.transformMat4( actor.car_pos, vec3.fromValues(0.,0.,0.), actor.mat_model);
+				vec3.transformMat4(actor.car_pos, vec3.fromValues(0.,0.,0.), actor.mat_model);
 			},
 		},
 	]
@@ -199,6 +208,7 @@ export function init_scene(regl, resources) {
 		car_actors: car_actors,
 		update_simulation,
 		update_car_speed,
+		update_car_angle,
 		render_ambient,
 		render_perlin,
 		render_bloom,
