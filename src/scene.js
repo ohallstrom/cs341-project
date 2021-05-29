@@ -74,7 +74,7 @@ export function init_scene(regl, resources) {
 	}
 	function update_car_angle(scene_info){
 		scene_info.actors.forEach(actor =>{
-			actor.old_angle += actor.car_angle;
+			actor.old_angle = actor.tot_angle;
 			actor.time_changement_speed = scene_info.sim_time;
 		})
 	}
@@ -183,15 +183,15 @@ export function init_scene(regl, resources) {
 			mesh: resources.mesh_car,
 			mat_model: mat4.create(),
 			car_speed: 0.5,
-			car_pos: vec3.fromValues(0., 0.,0.),
-			car_angle: 0.,
+			tot_angle: 0.,
 			old_angle: 0.,
 			time_changement_speed: 0.,
 			animation_tick: (actor, {sim_time})=> {
-				actor.car_angle = (sim_time-actor.time_changement_speed) * actor.car_speed;
+				let new_angle = (sim_time-actor.time_changement_speed) * actor.car_speed;
+				actor.tot_angle = actor.old_angle + new_angle
 				const noise_rotation = mat4.fromZRotation(mat4.create(),noise(sim_time));
 				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
-				const rotation = mat4.fromXRotation(actor.mat_model,actor.old_angle + actor.car_angle);
+				const rotation = mat4.fromXRotation(actor.mat_model,actor.tot_angle);
 				actor.mat_model = mat4_matmul_many(mat4.create(), rotation, translation, noise_rotation);	
 				vec3.transformMat4(actor.car_pos, vec3.fromValues(0.,0.,0.), actor.mat_model);
 			},
@@ -221,6 +221,14 @@ export function init_scene(regl, resources) {
 		},
 
 	];
+
+	// const camera_actor = [
+	// 	{
+	// 		animation_tick: (actor, {frontview, sim_time}) =>{
+
+	// 		}
+	// 	},
+	// ];
 
 	return {
 		actors: scene_actors,

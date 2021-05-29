@@ -113,6 +113,7 @@ async function main() {
 		}
 	}
 
+	const RADIUS_PLANET = 12.;
 
 	/*---------------------------------------------------------------
 		Camera
@@ -207,38 +208,19 @@ async function main() {
 
 	];
 
-
-	/* Adding an offset and changing the rayon.
-	* We want to add the sin and cos offset regarding the car position
-	*sin(a + b) = sin(a)cos(b) + cos(a)sin(b)
-	*cos(a + b) = cos(a)cos(b) - sin(a)sin(b)
-	* And our car rotation is defined by the rotation around the x-axis which is:
-	* [0., -r*sin(a), r*cos(a)]
-	*/
-	//we already have r*sin(a) and r*cos(a) from the actor position
-	//We precompute the sinus we want so we don't have to calculate them at each frame.
-	const sin_headl = Math.sin(0.25);
-	const cos_headl = Math.cos(0.25);
-	const sin_target_cam = Math.sin(0.35);
-	const cos_target_cam = Math.cos(0.35);
-	const sin_front_v = Math.sin(0.05);
-	const cos_front_v = Math.cos(0.05);
-	const sin_back_v = Math.sin(-0.15);
-	const cos_back_v = Math.cos(-0.15);
-
-	function offset_plus_scale(r, sin_b, cos_b){
-		const sin_a = -car.car_pos[1];
-		const cos_a = car.car_pos[2];
+	//Adds an offset to the
+	function offset_plus_scale(r, off, car_angle){
 		//We calculate for the offset :
 		//And we apply the formula
-		const y = -r*(sin_a*cos_b + cos_a*sin_b);
-		const z = r*(cos_a*cos_b - sin_a*sin_b);
+		const y = -r*(RADIUS_PLANET-0.1)*(Math.sin(car_angle + off))
+		const z = r*(RADIUS_PLANET-0.1)*(Math.cos(car_angle + off))
 		return  [y,z];
 	}
 	
 	const headl_R = new Light({
 		update: (light, {sim_time}) => {
-			let [y,z] = offset_plus_scale(1.1, sin_headl, cos_headl);
+			let angle = car.tot_angle;
+			let [y,z] = offset_plus_scale(1.1, 0.25, angle);
 			light.position = [-0.75, y, z];
 		},
 		color: [1., 0.9, 0.2],
@@ -246,7 +228,8 @@ async function main() {
 	});
 	const headl_L = new Light({
 		update: (light, {sim_time}) => {
-			let [y,z] = offset_plus_scale(1.1, sin_headl, cos_headl);
+			let angle = car.tot_angle;
+			let [y,z] = offset_plus_scale(1.1, 0.25, angle);
 			light.position = [0.75, y, z];
 		},
 		color: [1., 0.9, 0.2],
@@ -355,36 +338,28 @@ async function main() {
 			0.01, // near
 			100, // far
 		)
-		if (front_view){
-			const [cam_y,cam_z] = offset_plus_scale(1.15,sin_front_v,cos_front_v);
-			const [target_y, target_z] = offset_plus_scale(0.95, sin_target_cam, cos_target_cam);
 
-			const up = vec3.normalize(vec3.create(),car.car_pos);
+		if (front_view || back_view){
+			let angle = car.tot_angle
+			
+			const [target_y, target_z] = offset_plus_scale(0.95,0.35, angle);
+			var [cam_y, cam_z] = [0.,0.];
+			if (front_view){
+				[cam_y,cam_z] = offset_plus_scale(1.15, 0.05, angle);
+			}else{
+				[cam_y,cam_z] = offset_plus_scale(1.35, -0.15, angle);
+			}
+			const up = vec3.normalize(vec3.create(),vec3.fromValues(0., cam_y, cam_z));
 			const look_at = mat4.lookAt(
 				mat4.create(),
 				[0., cam_y, cam_z],
 				[0., target_y, target_z],
 				up
-			)
-			mat4.copy(mat_view, look_at);
-		}else if (back_view){
-			const [cam_y,cam_z] = offset_plus_scale(1.35, sin_back_v, cos_back_v);
-			const [target_y, target_z] = offset_plus_scale(0.95, sin_target_cam, cos_target_cam);
-
-			const up = vec3.normalize(vec3.create(),car.car_pos);
-			const look_at = mat4.lookAt(
-				mat4.create(),
-				[0., cam_y, cam_z],
-				[0., target_y, target_z],
-				up
-			)
+			);
 			mat4.copy(mat_view, look_at);
 		}else{
 			mat4.copy(mat_view, mat_world_to_cam);
 		}
-
-		// mat4.copy(mat_view, mat_world_to_cam);
-
 		var active_mat_view = mat_view;
 		var active_mat_projection = mat_projection;
 
