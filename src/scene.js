@@ -165,7 +165,7 @@ export function init_scene(regl, resources) {
 			},
 		},
 
-		{ //marvin
+		{ //marvin2
 			mesh: resources.mesh_marvin,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
@@ -176,6 +176,17 @@ export function init_scene(regl, resources) {
 				actor.mat_model = mat4_matmul_many(mat4.create(), rotationZ, rotationY, translation);
 			},
 		},
+
+		{ //tree
+			mesh: resources.mesh_tree,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET));
+				const rotation = mat4.fromYRotation(actor.mat_model, 230.)
+				actor.mat_model = mat4_matmul_many(mat4.create(), translation, rotation);
+			},
+		},
+		
 		
 	];
 	const car_actors = [
@@ -193,7 +204,6 @@ export function init_scene(regl, resources) {
 				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
 				const rotation = mat4.fromXRotation(actor.mat_model,actor.tot_angle);
 				actor.mat_model = mat4_matmul_many(mat4.create(), rotation, translation, noise_rotation);	
-				vec3.transformMat4(actor.car_pos, vec3.fromValues(0.,0.,0.), actor.mat_model);
 			},
 		},
 	]
@@ -222,13 +232,6 @@ export function init_scene(regl, resources) {
 
 	];
 
-	// const camera_actor = [
-	// 	{
-	// 		animation_tick: (actor, {frontview, sim_time}) =>{
-
-	// 		}
-	// 	},
-	// ];
 
 	return {
 		actors: scene_actors,

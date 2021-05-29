@@ -98,8 +98,14 @@ async function main() {
 			Material6: [0.2,0.2,0.2],
 		}),
 		'mesh_marvin': mesh_load_obj(regl, './meshes/marvin.obj', {
-			Alien: [1.,1.,1.],
+			Alien: [0.2,1.,0.2],
+			eyes: [0., 0.1,0.1],
 		}),
+
+		'mesh_tree': mesh_load_obj(regl, './meshes/tree.obj', {
+			leaves: [.5, 0.5, 1.],
+			trunk: [1., 1., 0.],
+		}),		
 	};
 
 	for(let cube_side = 0; cube_side < 6; cube_side++) {
