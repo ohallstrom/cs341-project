@@ -139,13 +139,19 @@ export function init_scene(regl, resources) {
 
 		bloom_pass_pipeline(batch_draw_calls);
 	};
+	function noise(time) {
+		return Math.cos(Math.PI*Math.random())*0.01;
+	}
 
 	const scene_actors = [
 		{ //rocket
 			mesh: resources.mesh_rocket,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
-				actor.mat_model = mat4.fromTranslation(mat4.create(), vec3.fromValues(2., 0., RADIUS_PLANET));				
+				const rotation_base = mat4.fromXRotation(actor.mat_model,Math.PI/2.);
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
+				const rotation = mat4.fromYRotation(actor.mat_model,sim_time);
+				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation, rotation_base);				
 			},
 		},
 	
@@ -153,7 +159,21 @@ export function init_scene(regl, resources) {
 			mesh: resources.mesh_marvin,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
-				actor.mat_model = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0., RADIUS_PLANET));				
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1+0.2*Math.sin(sim_time)));
+				const rotationY = mat4.fromYRotation(actor.mat_model,sim_time);
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotationY, translation);
+			},
+		},
+
+		{ //marvin
+			mesh: resources.mesh_marvin,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET+2.));
+				const rotationY = mat4.fromYRotation(actor.mat_model,sim_time);
+
+				const rotationZ = mat4.fromZRotation(actor.mat_model,Math.sin(sim_time));
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotationZ, rotationY, translation);
 			},
 		},
 		
@@ -169,9 +189,10 @@ export function init_scene(regl, resources) {
 			time_changement_speed: 0.,
 			animation_tick: (actor, {sim_time})=> {
 				actor.car_angle = (sim_time-actor.time_changement_speed) * actor.car_speed;
+				const noise_rotation = mat4.fromZRotation(mat4.create(),noise(sim_time));
 				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
 				const rotation = mat4.fromXRotation(actor.mat_model,actor.old_angle + actor.car_angle);
-				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation);	
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotation, translation, noise_rotation);	
 				vec3.transformMat4(actor.car_pos, vec3.fromValues(0.,0.,0.), actor.mat_model);
 			},
 		},
