@@ -97,15 +97,37 @@ async function main() {
 			Material5: [1.,1.,0.],
 			Material6: [0.2,0.2,0.2],
 		}),
-		'mesh_marvin': mesh_load_obj(regl, './meshes/marvin.obj', {
-			Alien: [0.2,1.,0.2],
+		'mesh_marvin1': mesh_load_obj(regl, './meshes/marvin.obj', {
+			Alien: [1.,0.1,0.1],
+			eyes: [0., 0.1,0.1],
+		}),
+		'mesh_marvin2': mesh_load_obj(regl, './meshes/marvin.obj', {
+			Alien: [0.1,1.,0.1],
+			eyes: [0., 0.1,0.1],
+		}),
+		'mesh_marvin3': mesh_load_obj(regl, './meshes/marvin.obj', {
+			Alien: [1.,1.,0.2],
 			eyes: [0., 0.1,0.1],
 		}),
 
-		'mesh_tree': mesh_load_obj(regl, './meshes/tree.obj', {
+
+		'mesh_tree1': mesh_load_obj(regl, './meshes/tree.obj', {
 			leaves: [.5, 0.5, 1.],
 			trunk: [1., 1., 0.],
-		}),		
+		}),	
+
+		'mesh_tree2': mesh_load_obj(regl, './meshes/tree.obj', {
+			leaves: [1., 0.2, .2],
+			trunk: [1., 1., 0.],
+		}),
+		'mesh_tree3': mesh_load_obj(regl, './meshes/tree.obj', {
+			leaves: [1., .6, .3],
+			trunk: [1., 1., 0.],
+		}),
+		'mesh_sat': mesh_load_obj(regl, './meshes/sat.obj', {
+			white: [1.,1.,1.],
+			black: [0.,0.,0.],
+		}),
 	};
 
 	for(let cube_side = 0; cube_side < 6; cube_side++) {
@@ -307,20 +329,6 @@ async function main() {
 			update_car_angle({sim_time: sim_time, actors: car_actors});
 		}
 	})
-
-	
-
-	function activate_preset_view() {
-		is_paused = true;
-		sim_time = 24.0;
-		cam_angle_z = 0.; //- Math.PI * 0.50;
-		cam_angle_y = 0.; //- Math.PI * (1./6.);
-		cam_distance_factor = 0.8;
-		cam_target = [0, 0, 12];		
-		update_cam_transform();
-	}
-	register_button_with_hotkey('btn-preset-view', 'c', activate_preset_view)
-
 
 
 	/*---------------------------------------------------------------

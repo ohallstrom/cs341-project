@@ -148,44 +148,125 @@ export function init_scene(regl, resources) {
 			mesh: resources.mesh_rocket,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
-				const rotation_base = mat4.fromXRotation(actor.mat_model,Math.PI/2.);
-				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
-				const rotation = mat4.fromYRotation(actor.mat_model,sim_time);
-				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation, rotation_base);				
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,1.3*RADIUS_PLANET));
+				const rotation = mat4.fromXRotation(actor.mat_model,-sim_time * 0.2);
+				actor.mat_model = mat4.multiply(mat4.create(), rotation, translation);				
+			},
+		},
+
+		{ //marvin1
+			mesh: resources.mesh_marvin1,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				actor.mat_model = mat4.fromTranslation(mat4.create(), vec3.fromValues(-2., -2.,RADIUS_PLANET-0.9));
 			},
 		},
 	
-		{ //marvin
-			mesh: resources.mesh_marvin,
-			mat_model: mat4.create(),
-			animation_tick: (actor, {sim_time}) => {
-				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1+0.2*Math.sin(sim_time)));
-				const rotationY = mat4.fromYRotation(actor.mat_model,sim_time);
-				actor.mat_model = mat4_matmul_many(mat4.create(), rotationY, translation);
-			},
-		},
-
 		{ //marvin2
-			mesh: resources.mesh_marvin,
+			mesh: resources.mesh_marvin2,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
-				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET+2.));
-				const rotationY = mat4.fromYRotation(actor.mat_model,sim_time);
+				const scale = mat4.scale(mat4.create(), mat4.create(), vec3.fromValues(1.2,1.2,1.2));
+				const transl =mat4.fromTranslation(mat4.create(), vec3.fromValues(-3.7, -2.,RADIUS_PLANET-0.9));
+				mat4_matmul_many(actor.mat_model, transl, scale );
+			},
+		},
 
+		{ //marvin3
+			mesh: resources.mesh_marvin3,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				const scale = mat4.scale(mat4.create(), mat4.create(), vec3.fromValues(0.7,0.7,0.7));
+				const transl =mat4.fromTranslation(mat4.create(), vec3.fromValues(-2.3, -1.,RADIUS_PLANET-0.8));
+				mat4_matmul_many(actor.mat_model, transl, scale );
+			},
+		},
+		{ //crazyMarv
+			mesh: resources.mesh_marvin1,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
+				const rotationX = mat4.fromXRotation(mat4.identity(mat4.create()), 10.);
+				const rotationY = mat4.fromYRotation(mat4.identity(mat4.create()), 0.5)
 				const rotationZ = mat4.fromZRotation(actor.mat_model,Math.sin(sim_time));
-				actor.mat_model = mat4_matmul_many(mat4.create(), rotationZ, rotationY, translation);
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotationX, rotationY, translation, rotationZ);
 			},
 		},
 
-		{ //tree
-			mesh: resources.mesh_tree,
+		{ //CrazyMarv's hair
+			mesh: resources.mesh_tree1,
 			mat_model: mat4.create(),
 			animation_tick: (actor, {sim_time}) => {
-				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET));
-				const rotation = mat4.fromYRotation(actor.mat_model, 230.)
-				actor.mat_model = mat4_matmul_many(mat4.create(), translation, rotation);
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
+				const rotationX = mat4.fromXRotation(mat4.identity(mat4.create()), 10.);
+				const rotationY = mat4.fromYRotation(mat4.identity(mat4.create()), 0.5)
+				const rotationZ = mat4.fromZRotation(actor.mat_model,Math.sin(sim_time));
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotationX, rotationY, translation, rotationZ);
 			},
 		},
+
+		{ //tree1
+			mesh: resources.mesh_tree1,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
+				const rotationX = mat4.fromXRotation(mat4.identity(mat4.create()), 1.45);
+				const rotationY = mat4.fromYRotation(mat4.identity(mat4.create()), 0.9)
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotationX, rotationY, translation);
+			},
+		},
+		{ //tree2
+			mesh: resources.mesh_tree2,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
+				const rotationX = mat4.fromXRotation(mat4.identity(mat4.create()), 1.5);
+				const rotationY = mat4.fromYRotation(mat4.identity(mat4.create()), -0.7)
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotationX, rotationY, translation);
+			},
+		},
+		{ //tree3
+			mesh: resources.mesh_tree2,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
+				const rotationX = mat4.fromXRotation(mat4.identity(mat4.create()), 1.55);
+				const rotationY = mat4.fromYRotation(mat4.identity(mat4.create()), 0.78)
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotationX, rotationY, translation);
+			},
+		},
+		{ //tree4
+			mesh: resources.mesh_tree3,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
+				const rotationX = mat4.fromXRotation(mat4.identity(mat4.create()), 3.);
+				const rotationY = mat4.fromYRotation(mat4.identity(mat4.create()), 0.3)
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotationX, rotationY, translation);
+			},
+		},
+		{ //tree4
+			mesh: resources.mesh_tree3,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.1));
+				const rotationX = mat4.fromXRotation(mat4.identity(mat4.create()), 1.8);
+				const rotationY = mat4.fromYRotation(mat4.identity(mat4.create()), -0.42)
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotationX, rotationY, translation);
+			},
+		},
+		{ //sat
+			mesh: resources.mesh_sat,
+			mat_model: mat4.create(),
+			animation_tick: (actor, {sim_time}) => {
+				const rotationZ = mat4.fromZRotation(mat4.identity(mat4.create()), Math.PI/2 + 0.9);
+				const translation = mat4.fromTranslation(mat4.create(), vec3.fromValues(0., 0.,RADIUS_PLANET-0.15));
+				const rotationX = mat4.fromXRotation(mat4.identity(mat4.create()), 3*Math.PI/2);
+				const rotationY = mat4.fromYRotation(mat4.identity(mat4.create()), -0.42)
+				actor.mat_model = mat4_matmul_many(mat4.create(), rotationX, rotationY, translation, rotationZ);
+			},
+		},
+		
 		
 		
 	];
