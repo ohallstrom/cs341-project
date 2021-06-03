@@ -18,19 +18,12 @@ uniform mat3 mat_normals; // mat3 not 4, because normals are only rotated and no
 void main() {
 	vec4 position_v4 = vec4(position, 1);
 
-	/** TODO 5.2:
-	Adapt implementation from assignment 5 to calculate the `varying` outputs
-	of this shader (v2f_position_view and v2f_normal) and the gl_Position.
-    */
-	// viewing vector (from camera to vertex in view coordinates), camera is at vec3(0, 0, 0) in cam coords
 	v2f_position_view = (mat_model_view * position_v4).xyz; 
 
-	// transform normal to camera coordinates
 	v2f_normal = normalize(mat_normals * normal); 
 
 	gl_Position = mat_mvp * position_v4 ;
 	
-	// transform normal to camera coordinates
 	v2f_diffuse_color = diffuse_color;
 	v2f_specular_color = specular_color;
 }

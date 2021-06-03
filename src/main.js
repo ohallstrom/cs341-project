@@ -1,9 +1,9 @@
 
 import {createREGL} from "../lib/regljs_2.1.0/regl.module.js"
-import {vec2, vec3, vec4, mat2, mat3, mat4} from "../lib/gl-matrix_3.3.0/esm/index.js"
-import {DOM_loaded_promise, load_text, load_image, register_button_with_hotkey, register_keyboard_action} from "./icg_web.js"
-import {deg_to_rad, mat4_to_string, vec_to_string, mat4_matmul_many, vec4FromVec3} from "./icg_math.js"
-import {mesh_load_obj, icg_mesh_make_uv_sphere} from "./icg_mesh.js"
+import {vec2, vec3, mat2, mat4} from "../lib/gl-matrix_3.3.0/esm/index.js"
+import {DOM_loaded_promise, load_text, register_button_with_hotkey, register_keyboard_action} from "./icg_web.js"
+import {deg_to_rad, mat4_matmul_many} from "./icg_math.js"
+import {mesh_load_obj} from "./icg_mesh.js"
 
 import {init_light} from "./light.js"
 import {init_scene} from "./scene.js"
@@ -68,9 +68,6 @@ async function main() {
 		'shader_perlin_phong_shadow_frag': load_text('./src/shaders/phong_perlin_shadow.frag.glsl'),
 		'shader_perlin_cell_shadow_vert': load_text('./src/shaders/cell_perlin_shadow.vert.glsl'),
 		'shader_perlin_cell_shadow_frag': load_text('./src/shaders/cell_perlin_shadow.frag.glsl'),
-		
-		'shader_viscube_vert': load_text('./src/shaders/cubemap_visualization_cube.vert.glsl'),
-		'shader_viscube_frag': load_text('./src/shaders/cubemap_visualization_cube.frag.glsl'),
 
 		'mesh_car': mesh_load_obj(regl, './meshes/racing_car.obj', {
 			wheels: [0.2,0.2,0.2],
@@ -130,10 +127,6 @@ async function main() {
 		}),
 	};
 
-	for(let cube_side = 0; cube_side < 6; cube_side++) {
-		resources[`tex_cube_side_${cube_side}`] = load_image(`./textures/cube_side_${cube_side}.png`);
-	}
-
 	// Wait for all downloads to complete
 	for (const key in resources) {
 		if (resources.hasOwnProperty(key)) {
@@ -156,22 +149,13 @@ async function main() {
 	let cam_target = [0, 0, 0];
 
 	function update_cam_transform() {
-		/*
-		Calculate the world-to-camera transformation matrix.
-		The camera orbits the scene
-		* cam_distance_base * cam_distance_factor = distance of the camera from the (0, 0, 0) point
-		* cam_angle_z - camera ray's angle around the Z axis
-		* cam_angle_y - camera ray's angle around the Y axis
 
-		* cam_target - the point we orbit around
-		*/
 		const dist = cam_distance_base * cam_distance_factor;
 		let look_at = mat4.lookAt(mat4.create(),
 		[dist, 0, 0], // camera position in world coord
 			cam_target, // view target point
 			[0, 0, 1], // up vector
 		);
-		// mat_world_to_cam = A * B * ...
 		//Adding 180 degrees offset as proposed by teaching assistant.
 		const M_rotatZ = mat4.fromZRotation(mat4.create(), cam_angle_z + Math.PI);
 		const M_rotatY = mat4.fromYRotation(mat4.create(), - cam_angle_y );
@@ -207,7 +191,6 @@ async function main() {
 		const factor_mul = (event.deltaY > 0) ? factor_mul_base : 1./factor_mul_base;
 		cam_distance_factor *= factor_mul;
 		cam_distance_factor = Math.max(0.1, Math.min(cam_distance_factor, 4));
-		// console.log('wheel', event.deltaY, event.deltaMode);
 		event.preventDefault(); // don't scroll the page too...
 		update_cam_transform();
 	})

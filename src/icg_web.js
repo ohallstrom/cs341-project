@@ -24,22 +24,6 @@ export function async_timeout(time_s) {
 }
 
 /*
-Downloads an image from an URL
-*/
-export function load_image(img_url) {
-	return new Promise((resolve, reject) => {
-		const img_obj = new Image;
-		img_obj.crossOrigin = "anonymous";
-		img_obj.addEventListener('load', (ev) => resolve(ev.target));
-		img_obj.addEventListener('error', (ev) => {
-			console.error(`Failed to load image ${img_url}, maybe due to CORS. img.onerror returned`, ev);
-			reject(ev);
-		});
-		img_obj.src = img_url;
-	});
-}
-
-/*
 Downloads an image and converts it to a WebGL texture.
 We need to provide the regl instance which communicates with the GPU to put the texture in GPU memory.
 	tex_options = override construction options

@@ -1,15 +1,8 @@
 precision highp float;
 		
-varying vec3 v2f_color;
 varying vec3 v2f_position;
 
-uniform vec3 light_color;
-
-
 const float ambient_intensity = 0.15;
-const float threshold = 0.85;
-const float threshold_gaussian = 0.7727;
-const float dv = 0.0007;
 
 #define NUM_GRADIENTS 12
 
@@ -103,34 +96,7 @@ vec3 tex_marble(vec2 point) {
 	return (alpha * white + (1. - alpha) * brown_dark);
 }
 
-vec3 gaussian_marble(vec2 point){
-	vec3 acc = vec3(0.);
-	for (highp float x = 0.; x < 5.; x+=1.) {
-		for (highp float y = 0.; y < 5.; y+=1.) {
-			vec3 color = tex_marble(vec2(point.x+(x-2.)*dv,point.y+(y-2.)*dv));
-			if (dot(color, vec3(0.2126, 0.7152, 0.0722)) > 0.8){
-				if (x == 3. && y == 3.){
-					acc += color;
-				}
-				acc += color;	
-			}
-		}
-	}
-	//vec3 r_acc = acc*0.07142857;
-	vec3 r_acc = acc*0.038;
-
-	//vec3 r_acc = acc*0.03846154;
-	return r_acc;
-}
-
 void main() {
 	vec3 color = ambient_intensity*tex_marble(v2f_position.xy);
-	// float brightness = dot(color, vec3(0.2126, 0.7152, 0.0722));
-	// if (brightness > 0.7){
-	// 	gl_FragColor = vec4(ambient_intensity*gaussian_marble(v2f_position.xy), 1.)*0.1 + vec4(color,1.)*1.;
-	// } else {
-	// 	gl_FragColor = vec4(color,1.);
-	// }
 	gl_FragColor = vec4(color,1.);
-
 }

@@ -1,5 +1,5 @@
-import {vec3, vec4, mat3, mat4} from "../lib/gl-matrix_3.3.0/esm/index.js"
-import {mat4_to_string, vec_to_string, mat4_matmul_many, vec3FromVec4} from "./icg_math.js"
+import {vec3, mat4} from "../lib/gl-matrix_3.3.0/esm/index.js"
+import {mat4_matmul_many} from "./icg_math.js"
 
 //DECLARATION OF CONSTANTS
 const RADIUS_PLANET = 12.;
@@ -28,15 +28,12 @@ export function init_scene(regl, resources) {
 	const perlin_pass_pipeline = regl({
 		attributes: {
 			position: regl.prop('mesh.vertex_positions'),
-			color:    regl.prop('mesh.vertex_color'),
 		},
-		// Faces, as triplets of vertex indices
+
 		elements: regl.prop('mesh.faces'),
 
-		// Uniforms: global data available to the shader
 		uniforms: {
 			mat_mvp:     regl.prop('mat_mvp'),
-			light_color: regl.prop('ambient_light_color'),
 		},	
 
 		vert: resources.shader_perlin_vert,
@@ -48,15 +45,12 @@ export function init_scene(regl, resources) {
 	const bloom_pass_pipeline = regl({
 		attributes: {
 			position: regl.prop('mesh.vertex_positions'),
-			color:    regl.prop('mesh.vertex_color'),
 		},
-		// Faces, as triplets of vertex indices
+
 		elements: regl.prop('mesh.faces'),
 
-		// Uniforms: global data available to the shader
 		uniforms: {
 			mat_mvp:     regl.prop('mat_mvp'),
-			light_color: regl.prop('ambient_light_color'),
 		},	
 
 		vert: resources.shader_bloom_vert,
@@ -106,34 +100,28 @@ export function init_scene(regl, resources) {
 		const batch_draw_calls = actors.map((actor) => {
 			const mat_model      = actor.mat_model;
 			const mat_mvp        = mat4.create();
-			const mat_model_view = mat4.create();
 
-			mat4_matmul_many(mat_model_view, mat_view, mat_model);
-			mat4_matmul_many(mat_mvp, mat_projection, mat_model_view);
+			mat4_matmul_many(mat_mvp, mat_projection, mat_view, mat_model);
 
 			return {
 				mesh:        actor.mesh,
 				mat_mvp:     mat_mvp,
-				ambient_light_color: ambient_light_color,
 			}
 		});
 
 		perlin_pass_pipeline(batch_draw_calls);
 	};
 
-	function render_bloom({actors, mat_view, mat_projection, ambient_light_color}) {
+	function render_bloom({actors, mat_view, mat_projection}) {
 		const batch_draw_calls = actors.map((actor) => {
 			const mat_model      = actor.mat_model;
 			const mat_mvp        = mat4.create();
-			const mat_model_view = mat4.create();
 
-			mat4_matmul_many(mat_model_view, mat_view, mat_model);
-			mat4_matmul_many(mat_mvp, mat_projection, mat_model_view);
+			mat4_matmul_many(mat_mvp, mat_projection, mat_view, mat_model);
 
 			return {
 				mesh:        actor.mesh,
 				mat_mvp:     mat_mvp,
-				ambient_light_color: ambient_light_color,
 			}
 		});
 

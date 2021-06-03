@@ -1,7 +1,6 @@
 import {vec3, vec4, mat3, mat4} from "../lib/gl-matrix_3.3.0/esm/index.js"
-import {icg_mesh_make_cube} from "./icg_mesh.js"
-import {deg_to_rad, mat4_to_string, vec_to_string, mat4_matmul_many, transform3DPoint, vec3FromVec4, vec4FromVec3} from "./icg_math.js"
-import { transformMat4 } from "../lib/gl-matrix_3.3.0/esm/vec3.js";
+import {mat4_matmul_many, vec3FromVec4, vec4FromVec3} from "./icg_math.js"
+import {transformMat4} from "../lib/gl-matrix_3.3.0/esm/vec3.js";
 
 
 export function init_light(regl, resources) {
@@ -11,16 +10,6 @@ export function init_light(regl, resources) {
 		colorFormat: 'rgba', // GLES 2.0 doesn't support single channel textures : (
 		colorType:   'float',
 	});
-
-	const annotation_cubemap = regl.cube({
-		radius:      512,
-		colorFormat: 'rgba',
-		colorType:   'uint8',
-		mag: 'linear',
-		min: 'linear', 
-		faces: [0, 1, 2, 3, 4, 5].map(side_idx => resources[`tex_cube_side_${side_idx}`]),
-	});
-
 
 	const shadowmap_generation_pipeline = regl({
 		attributes: {
@@ -69,14 +58,6 @@ export function init_light(regl, resources) {
 		vert: resources.shader_phong_shadow_vert,
 		frag: resources.shader_phong_shadow_frag,
 
-		// The depth buffer needs to be filled before calling this pipeline,
-		// otherwise our additive blending mode can accumulate contributions
-		// from fragments that should be invisible.
-		// (The depth buffer is filled by the ambient pass.)
-
-		/* Todo 6.2.3
-		    change the blend options
-		*/
 		blend: {
             enable: true,
             func: {
@@ -98,8 +79,6 @@ export function init_light(regl, resources) {
 		attributes: {
 			position:       regl.prop('mesh.vertex_positions'),
 			normal:         regl.prop('mesh.vertex_normals'),
-			diffuse_color:  regl.prop('mesh.vertex_color'),
-			specular_color: regl.prop('mesh.vertex_color'),
 		},
 		// Faces, as triplets of vertex indices
 		elements: regl.prop('mesh.faces'),
@@ -115,20 +94,12 @@ export function init_light(regl, resources) {
 			light_color:     regl.prop('light_color'),
 			shadow_cubemap:  shadow_cubemap,
 
-			shininess: 0.8,
+			shininess: 0.5,
 		},
 
 		vert: resources.shader_perlin_phong_shadow_vert,
 		frag: resources.shader_perlin_phong_shadow_frag,
 
-		// The depth buffer needs to be filled before calling this pipeline,
-		// otherwise our additive blending mode can accumulate contributions
-		// from fragments that should be invisible.
-		// (The depth buffer is filled by the ambient pass.)
-
-		/* Todo 6.2.3
-		    change the blend options
-		*/
 		blend: {
             enable: true,
             func: {
@@ -173,14 +144,6 @@ export function init_light(regl, resources) {
 		vert: resources.shader_cell_shadow_vert,
 		frag: resources.shader_cell_shadow_frag,
 
-		// The depth buffer needs to be filled before calling this pipeline,
-		// otherwise our additive blending mode can accumulate contributions
-		// from fragments that should be invisible.
-		// (The depth buffer is filled by the ambient pass.)
-
-		/* Todo 6.2.3
-		    change the blend options
-		*/
 		blend: {
             enable: true,
             func: {
@@ -202,8 +165,6 @@ export function init_light(regl, resources) {
 		attributes: {
 			position:       regl.prop('mesh.vertex_positions'),
 			normal:         regl.prop('mesh.vertex_normals'),
-			diffuse_color:  regl.prop('mesh.vertex_color'),
-			specular_color: regl.prop('mesh.vertex_color'),
 		},
 		// Faces, as triplets of vertex indices
 		elements: regl.prop('mesh.faces'),
@@ -225,14 +186,6 @@ export function init_light(regl, resources) {
 		vert: resources.shader_perlin_cell_shadow_vert,
 		frag: resources.shader_perlin_cell_shadow_frag,
 
-		// The depth buffer needs to be filled before calling this pipeline,
-		// otherwise our additive blending mode can accumulate contributions
-		// from fragments that should be invisible.
-		// (The depth buffer is filled by the ambient pass.)
-
-		/* Todo 6.2.3
-		    change the blend options
-		*/
 		blend: {
             enable: true,
             func: {
@@ -250,18 +203,6 @@ export function init_light(regl, resources) {
 		cull: {enable: false},
 	});
 
-
-	/*
-	TODO 6.1.1 cube_camera_projection:
-		Construct the camera projection matrix which has a correct light camera's view frustum.
-		please use the function perspective, see https://stackoverflow.com/questions/28286057/trying-to-understand-the-math-behind-the-perspective-matrix-in-webgl
-		Note: this is the same for all point lights/cube faces!
-	*/
-	//projection_matrix
-	//fovy = arctan(y/-z)/2
-	//is it shadow_cubemap?
-	//is the ratio correct?
-	//distance along z axis = light_distance_cubemap ?
 	const cube_camera_projection = mat4.perspective(mat4.create(), Math.atan(1) * 2, 1, 0.1, 100); 
 
 	class Light {
@@ -279,14 +220,6 @@ export function init_light(regl, resources) {
 		}
 
 		cube_camera_view(side_idx, scene_view) {
-			/*
-			Todo 6.1.2 cube_camera_view:
-				Construct the camera matrices which look through one of the 6 cube faces
-				for a cube aligned with the eye coordinate axes.
-				These faces are indexed in the order: +x, -x, +y, -y, +z, -z.
-				So when `side_idx = 0`, we should return the +x camera matrix,
-				and when `side_idx = 5`, we should return the -z one.
-			 */
 
 			let center = [0,0,0]
 			let up = [0,0,0]
@@ -315,10 +248,6 @@ export function init_light(regl, resources) {
 			let center_offseted = vec3.add(vec3.create(), pos_eye, center);
 			let look_at = mat4.lookAt(mat4.create(), pos_eye, center_offseted, up);
 			return mat4_matmul_many(mat4.create(), look_at, scene_view);
-		}
-
-		get_cube_camera_projection() {
-			return cube_camera_projection;
 		}
 
 		render_shadowmap(scene_info) {
@@ -420,20 +349,6 @@ export function init_light(regl, resources) {
 				phong_perlin_lighting_pipeline(batch_draw_calls);
 			}
 			
-		}
-
-		// // Note: mat_view can differ from scene_mat_view, e.g. when viewing from cube_camera_view
-		visualize_cube({mat_view, scene_mat_view, mat_projection}) {
-			const light_position_view = transform3DPoint(scene_mat_view, this.position);
-			const m_translation = mat4.fromTranslation(mat4.create(), light_position_view); // place cube at the light position in eye space
-
-			const m_model_view = mat4_matmul_many(mat4.create(), mat_view, mat4.invert(mat4.create(), scene_mat_view), m_translation, mat4.fromScaling(mat4.create(), [0.4, 0.4, 0.4]));
-			const m_mvp = mat4_matmul_many(mat4.create(), mat_projection, m_model_view);
-
-			cube_pipeline({
-				mat_model_view: m_model_view,
-				mat_mvp: m_mvp,
-			});
 		}
 	}
 
