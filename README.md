@@ -1,7 +1,6 @@
-# cs341-project
-Repo for the project in the introduction to computer graphics course taught at EPFL that I did together with @HaymozJo.
+Repo for the project in the introduction to computer graphics course (CS-341) taught at EPFL that I did together with @HaymozJo.
 ---
-title: Final Report G18
+# Final Report 
 ---
 by Oskar Hallström and Jonathan Haymoz
 ---
