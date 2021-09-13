@@ -1,7 +1,6 @@
 Repo for the project in the introduction to computer graphics course (CS-341) taught at EPFL that I did together with @HaymozJo.
 ---
 # Final Report 
----
 by Oskar Hallström and Jonathan Haymoz
 ---
 # Abstract
